@@ -16,6 +16,16 @@
         "@typescript-eslint/no-explicit-any": "error",
         "import/prefer-default-export": "off",
         "no-console": "off",
-        "operator-linebreak": ["error", "before"]
+        "operator-linebreak": ["error", "before"],
+        "@typescript-eslint/naming-convention": [
+            "error",
+            {
+              "selector": "variable",
+              "format": ["camelCase", "UPPER_CASE", "PascalCase", "snake_case"],
+              "leadingUnderscore": "allow",
+              "trailingUnderscore": "allow"
+            }
+          ],
+          "no-underscore-dangle":  ["error", { "allow": ["__dirname"] }]
     }
 }
