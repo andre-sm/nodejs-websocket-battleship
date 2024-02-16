@@ -1,15 +1,19 @@
-import { WebSocket } from 'ws';
-import { BaseRequest } from '../models/user-models';
+import { BaseRequest, CustomWebSocket } from '../models/user-models';
 import { handleUserAuth } from '../controllers/user-controller';
+import { handleRoomCreation } from '../controllers/game-room-controller';
 
-export const handleWsConnection = async (ws: WebSocket) => {
-  ws.on('message', (msg: string) => {
+export const handleWsConnection = async (socket: CustomWebSocket) => {
+  socket.on('message', (msg: Buffer) => {
     try {
-      const { type, data }: BaseRequest = JSON.parse(msg);
+      const { type, data }: BaseRequest = JSON.parse(msg.toString());
 
       switch (type) {
         case 'reg':
-          handleUserAuth(ws, data);
+          handleUserAuth(socket, data);
+          break;
+
+        case 'create_room':
+          handleRoomCreation(socket);
           break;
 
         default:
@@ -20,7 +24,7 @@ export const handleWsConnection = async (ws: WebSocket) => {
     }
   });
 
-  ws.on('close', () => {
+  socket.on('close', () => {
     console.log('Client disconnected');
   });
 };

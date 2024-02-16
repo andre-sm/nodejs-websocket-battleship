@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import { WebSocketServer } from 'ws';
 import { httpServer } from './http_server/index';
 import { handleWsConnection } from './ws_server';
+import { setInstanse } from './utils/send-to-all';
 
 dotenv.config();
 const httpPort = process.env.HTTP_PORT || 8181;
@@ -11,7 +12,9 @@ httpServer.listen(httpPort, () => {
   console.log(`HTTP server listening on port ${httpPort}`);
 });
 
-const wss = new WebSocketServer({ port: wsPort });
+export const wss = new WebSocketServer({ port: wsPort });
+
+setInstanse(wss);
 
 console.log(`Websocket server listening on port ${wsPort}`);
 
