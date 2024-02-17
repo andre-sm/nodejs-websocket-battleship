@@ -2,6 +2,7 @@ import { Player, PlayerResponse, Room } from '../models/user-models';
 
 const players: Player[] = [];
 const rooms: Room[] = [];
+const games: Game[] = [];
 
 export const addPlayer = (name: string, password: string, id: number): PlayerResponse => {
   try {
@@ -40,18 +41,35 @@ export const getRoomList = () => {
   }
 };
 
-export const addPlayerToRoom = (roomId: number, userId: number) => {
+export const addPlayerToRoom = (roomId: number, playerId: number) => {
   try {
     const roomIndex = rooms.findIndex((room) => room.roomId === roomId);
-    const playerIndex = players.findIndex((player) => player.id === userId);
+    const playerIndex = players.findIndex((player) => player.id === playerId);
 
     const playerData = {
-      index: userId,
+      index: playerId,
       name: players[playerIndex].name,
     };
 
-    rooms[roomIndex].roomUsers.push(playerData);
+    const isExist = rooms[roomIndex].roomUsers.find((roomPlayer) => roomPlayer.index === playerId);
+
+    if (!isExist) {
+      rooms[roomIndex].roomUsers.push(playerData);
+    }
+
+    return rooms[roomIndex].roomUsers.map((user) => user.index);
   } catch (error) {
     throw new Error('Error while adding new player to room');
+  }
+};
+
+export const createGame = (id: number) => {
+  try {
+    const newGame = {
+      gameId: id,
+    };
+    games.push(newGame);
+  } catch (error) {
+    throw new Error('Error while new room creation');
   }
 };

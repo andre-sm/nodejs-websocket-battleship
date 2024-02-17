@@ -39,3 +39,7 @@ export interface Room {
   board: string[];
   position: string[];
 }
+
+export interface Game {
+  idGame: number;
+}

@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 import { WebSocketServer } from 'ws';
 import { httpServer } from './http_server/index';
 import { handleWsConnection } from './ws_server';
-import { setInstanse } from './utils/send-to-all';
+import { setInstanse } from './utils/broadcast-to-all';
 
 dotenv.config();
 const httpPort = process.env.HTTP_PORT || 8181;

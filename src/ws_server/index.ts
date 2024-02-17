@@ -1,6 +1,6 @@
 import { BaseRequest, CustomWebSocket } from '../models/user-models';
 import { handleUserAuth } from '../controllers/user-controller';
-import { handleRoomCreation } from '../controllers/game-room-controller';
+import { handleRoomCreation, handleAddToRoom } from '../controllers/game-room-controller';
 
 export const handleWsConnection = async (socket: CustomWebSocket) => {
   socket.on('message', (msg: Buffer) => {
@@ -14,6 +14,10 @@ export const handleWsConnection = async (socket: CustomWebSocket) => {
 
         case 'create_room':
           handleRoomCreation(socket);
+          break;
+
+        case 'add_user_to_room':
+          handleAddToRoom(socket, data);
           break;
 
         default:

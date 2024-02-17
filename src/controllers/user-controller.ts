@@ -1,7 +1,7 @@
 import { PlayerAuthData, PlayerResponse, CustomWebSocket } from '../models/user-models';
 import { createId } from '../utils/create-id';
 import * as store from '../services/store';
-import { broadcastToAll } from '../utils/send-to-all';
+import { broadcastToAll } from '../utils/broadcast-to-all';
 
 const handleUserAuth = async (socket: CustomWebSocket, data: string): Promise<void> => {
   try {
