@@ -1,7 +1,7 @@
 import { BaseRequest, CustomWebSocket } from '../models/user-models';
 import { handleUserAuth } from '../controllers/user-controller';
 import { handleRoomCreation, handleAddToRoom } from '../controllers/game-room-controller';
-import { handleAddShips } from '../controllers/game-play-controller';
+import { handleAddShips, handleAttack } from '../controllers/game-play-controller';
 
 export const handleWsConnection = async (socket: CustomWebSocket) => {
   socket.on('message', (msg: Buffer) => {
@@ -23,6 +23,10 @@ export const handleWsConnection = async (socket: CustomWebSocket) => {
 
         case 'add_ships':
           handleAddShips(socket, data);
+          break;
+
+        case 'attack':
+          handleAttack(socket, data);
           break;
 
         default:

@@ -1,5 +1,5 @@
 import {
-  Player, PlayerResponse, Room, Game, Ship, RoomPlayerData,
+  Player, PlayerResponse, Room, Game, RoomPlayerData, CustomShip,
 } from '../models/user-models';
 
 const players: Player[] = [];
@@ -37,7 +37,9 @@ export const createRoom = (id: number) => {
 
 export const getRoomList = () => {
   try {
-    return rooms.filter((room) => room.roomUsers.length === 1).map((room) => ({ roomId: room.roomId, roomUsers: room.roomUsers }));
+    return rooms
+      .filter((room) => room.roomUsers.length === 1)
+      .map((room) => ({ roomId: room.roomId, roomUsers: room.roomUsers }));
   } catch (error) {
     throw new Error('Error while getting room list');
   }
@@ -76,10 +78,12 @@ export const createGame = (idGame: number, gamePlayers: RoomPlayerData[]) => {
         [playerOne.index]: {
           ...playerOne,
           ships: [],
+          board: [],
         },
         [playerTwo.index]: {
           ...playerTwo,
           ships: [],
+          board: [],
         },
       },
       readyPlayers: 0,
@@ -91,24 +95,28 @@ export const createGame = (idGame: number, gamePlayers: RoomPlayerData[]) => {
   }
 };
 
-export const addShipsToGameBoard = (gameId: number, playerId: number, ships: Ship[]) => {
-  try {
-    const game = games[gameId];
-    if (!game) return;
-    const player = game.players[playerId];
+export const addShipsToGameBoard
+  = (gameId: number, playerId: number, ships: CustomShip[], board: Array<Array<string>>) => {
+    try {
+      console.log(ships);
+      console.log(board);
+      const game = games[gameId];
+      if (!game) return;
+      const player = game.players[playerId];
 
-    if (player) {
-      player.ships = ships;
-      game.readyPlayers += 1;
-    }
+      if (player) {
+        player.ships = ships;
+        player.board = board;
+        game.readyPlayers += 1;
+      }
 
-    if (game.readyPlayers === 2) {
-      return Object.values(game.players).map((playerData) => ({
-        currentPlayerIndex: playerData.index,
-        ships: playerData.ships,
-      }));
+      if (game.readyPlayers === 2) {
+        return Object.values(game.players).map((playerData) => ({
+          currentPlayerIndex: playerData.index,
+          ships: playerData.ships,
+        }));
+      }
+    } catch (error) {
+      throw new Error('Error while adding new player to room');
     }
-  } catch (error) {
-    throw new Error('Error while adding new player to room');
-  }
-};
+  };

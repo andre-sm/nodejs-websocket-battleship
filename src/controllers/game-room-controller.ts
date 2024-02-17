@@ -1,7 +1,7 @@
 import { CustomWebSocket } from '../models/user-models';
 import * as store from '../services/store';
 import { createId } from '../utils/create-id';
-import { broadcastToAll, broadcastToBoth } from '../utils/broadcast-to-all';
+import { broadcastToAll, broadcastToBoth } from '../utils/broadcast';
 
 const handleRoomCreation = async (socket: CustomWebSocket): Promise<void> => {
   try {

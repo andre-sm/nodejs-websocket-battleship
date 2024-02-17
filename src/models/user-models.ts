@@ -40,20 +40,28 @@ export interface Room {
   position: string[];
 }
 
+export interface Coordinate {
+  x: number;
+  y: number;
+}
+
 export interface Ship {
-  position: {
-    x: number;
-    y: number;
-  }
+  position: Coordinate;
   direction: boolean;
   length: number;
   type: string;
 }
 
+export interface CustomShip extends Ship {
+  health: number;
+  coordinates: Coordinate[];
+}
+
 export interface GamePlayerData {
   index: number;
   name: string;
-  ships: Ship[];
+  ships: CustomShip[];
+  board: Array<Array<string>>;
 }
 
 export interface Game {
