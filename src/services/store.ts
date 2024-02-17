@@ -1,8 +1,10 @@
-import { Player, PlayerResponse, Room } from '../models/user-models';
+import {
+  Player, PlayerResponse, Room, Game, Ship, RoomPlayerData,
+} from '../models/user-models';
 
 const players: Player[] = [];
 const rooms: Room[] = [];
-const games: Game[] = [];
+const games: { [key: string]: Game; } = {};
 
 export const addPlayer = (name: string, password: string, id: number): PlayerResponse => {
   try {
@@ -57,19 +59,56 @@ export const addPlayerToRoom = (roomId: number, playerId: number) => {
       rooms[roomIndex].roomUsers.push(playerData);
     }
 
-    return rooms[roomIndex].roomUsers.map((user) => user.index);
+    return rooms[roomIndex].roomUsers;
   } catch (error) {
     throw new Error('Error while adding new player to room');
   }
 };
 
-export const createGame = (id: number) => {
+export const createGame = (idGame: number, gamePlayers: RoomPlayerData[]) => {
   try {
+    const playerOne = gamePlayers[0];
+    const playerTwo = gamePlayers[1];
+
     const newGame = {
-      gameId: id,
+      idGame,
+      players: {
+        [playerOne.index]: {
+          ...playerOne,
+          ships: [],
+        },
+        [playerTwo.index]: {
+          ...playerTwo,
+          ships: [],
+        },
+      },
+      readyPlayers: 0,
     };
-    games.push(newGame);
+
+    games[idGame] = newGame;
   } catch (error) {
     throw new Error('Error while new room creation');
+  }
+};
+
+export const addShipsToGameBoard = (gameId: number, playerId: number, ships: Ship[]) => {
+  try {
+    const game = games[gameId];
+    if (!game) return;
+    const player = game.players[playerId];
+
+    if (player) {
+      player.ships = ships;
+      game.readyPlayers += 1;
+    }
+
+    if (game.readyPlayers === 2) {
+      return Object.values(game.players).map((playerData) => ({
+        currentPlayerIndex: playerData.index,
+        ships: playerData.ships,
+      }));
+    }
+  } catch (error) {
+    throw new Error('Error while adding new player to room');
   }
 };

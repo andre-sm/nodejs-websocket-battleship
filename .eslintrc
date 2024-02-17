@@ -17,6 +17,7 @@
         "import/prefer-default-export": "off",
         "no-console": "off",
         "operator-linebreak": ["error", "before"],
+        "consistent-return": "off",
         "@typescript-eslint/naming-convention": [
             "error",
             {

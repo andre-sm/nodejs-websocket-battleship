@@ -40,6 +40,32 @@ export interface Room {
   position: string[];
 }
 
+export interface Ship {
+  position: {
+    x: number;
+    y: number;
+  }
+  direction: boolean;
+  length: number;
+  type: string;
+}
+
+export interface GamePlayerData {
+  index: number;
+  name: string;
+  ships: Ship[];
+}
+
 export interface Game {
   idGame: number;
+  readyPlayers: number;
+  players: {
+    [key: string]: GamePlayerData;
+  };
+}
+
+export interface GameBoardShipsRequest {
+  gameId: number;
+  ships: Ship[];
+  indexPlayer: number;
 }

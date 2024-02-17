@@ -1,7 +1,7 @@
 import { CustomWebSocket } from '../models/user-models';
 import * as store from '../services/store';
 import { createId } from '../utils/create-id';
-import { broadcastToAll } from '../utils/broadcast-to-all';
+import { broadcastToAll, broadcastToBoth } from '../utils/broadcast-to-all';
 
 const handleRoomCreation = async (socket: CustomWebSocket): Promise<void> => {
   try {
@@ -29,15 +29,13 @@ const handleAddToRoom = async (socket: CustomWebSocket, data: string): Promise<v
 
     if (roomPlayers.length === 2) {
       const gameId = createId();
-      store.createGame(gameId);
+      store.createGame(gameId, roomPlayers);
 
-      const createGameResponse = {
-        type: 'create_game',
-        data: JSON.stringify({ idGame: gameId, idPlayer: socket.userId }),
-        id: 0,
-      };
+      const responseData = roomPlayers.map((player) => ({
+        [player.index]: JSON.stringify({ idGame: gameId, idPlayer: player.index }),
+      }));
 
-      broadcastToAll(JSON.stringify(createGameResponse), roomPlayers);
+      broadcastToBoth('create_game', responseData);
     }
 
     const updateRoomResponse = {

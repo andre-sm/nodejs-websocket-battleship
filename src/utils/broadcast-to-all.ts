@@ -7,15 +7,23 @@ export const setInstanse = (wss: WebSocketServer) => {
   wssInstanse = wss;
 };
 
-export const broadcastToAll = (msg: string, userIds: number[] = []) => {
+export const broadcastToAll = (msg: string) => {
   wssInstanse.clients.forEach((client) => {
-    if (userIds.length !== 0) {
-      const { userId } = client as CustomWebSocket;
-      if (userIds.includes(userId)) {
-        client.send(msg);
-      }
-    } else {
-      client.send(msg);
+    client.send(msg);
+  });
+};
+
+export const broadcastToBoth = (type: string, data: { [key: string]: string; }[]) => {
+  wssInstanse.clients.forEach((client) => {
+    const { userId } = client as CustomWebSocket;
+    const player = data.find((item) => item[userId]);
+    if (player) {
+      const msg = {
+        type,
+        data: player[userId],
+        id: 0,
+      };
+      client.send(JSON.stringify(msg));
     }
   });
 };
