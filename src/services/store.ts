@@ -1,5 +1,5 @@
 import {
-  Player, PlayerResponse, Room, Game, RoomPlayerData, CustomShip,
+  Player, PlayerResponse, Room, Game, RoomPlayerData, CustomShip, Ship,
 } from '../models/user-models';
 
 const players: Player[] = [];
@@ -127,6 +127,37 @@ export const getActivePlayer = (gameId: number) => {
     if (!game) return;
     const activePlayer = Object.values(game.players).find((player) => player.isActive);
     if (activePlayer) return activePlayer.index;
+  } catch (error) {
+    throw new Error('Error while getting room list');
+  }
+};
+
+export const getOpponentPlayer = (gameId: number, currentPlayerId: number) => {
+  try {
+    return Object.values(games[gameId].players).find((player) => player.index !== currentPlayerId);
+  } catch (error) {
+    throw new Error('Error while getting room list');
+  }
+};
+
+export const changeActivePlayer = (gameId: number, currentActivePlayerId: number) => {
+  try {
+    const gamePlayers = Object.values(games[gameId].players);
+    gamePlayers.forEach((player) => {
+      if (player.index === currentActivePlayerId) {
+        games[gameId].players[player.index].isActive = false;
+      } else {
+        games[gameId].players[player.index].isActive = true;
+      }
+    });
+  } catch (error) {
+    throw new Error('Error while getting room list');
+  }
+};
+
+export const decreaseShipHealth = (gameId: number, playerId: number, shipIndex: number) => {
+  try {
+    games[gameId].players[playerId].ships[shipIndex].health -= 1;
   } catch (error) {
     throw new Error('Error while getting room list');
   }

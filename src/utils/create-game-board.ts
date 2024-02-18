@@ -1,7 +1,7 @@
 import { Ship } from '../models/user-models';
 
 export const createGameBoard = (ships: Ship[]) => {
-  const board = new Array(ships.length).fill('E').map(() => new Array(ships.length).fill('E'));
+  const board = new Array(10).fill('E').map(() => new Array(10).fill('E'));
 
   const shipsCoords = ships.map((shipData) => {
     const coordinates = [];
