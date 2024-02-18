@@ -79,11 +79,13 @@ export const createGame = (idGame: number, gamePlayers: RoomPlayerData[]) => {
           ...playerOne,
           ships: [],
           board: [],
+          isActive: true,
         },
         [playerTwo.index]: {
           ...playerTwo,
           ships: [],
           board: [],
+          isActive: false,
         },
       },
       readyPlayers: 0,
@@ -98,8 +100,6 @@ export const createGame = (idGame: number, gamePlayers: RoomPlayerData[]) => {
 export const addShipsToGameBoard
   = (gameId: number, playerId: number, ships: CustomShip[], board: Array<Array<string>>) => {
     try {
-      console.log(ships);
-      console.log(board);
       const game = games[gameId];
       if (!game) return;
       const player = game.players[playerId];
@@ -120,3 +120,14 @@ export const addShipsToGameBoard
       throw new Error('Error while adding new player to room');
     }
   };
+
+export const getActivePlayer = (gameId: number) => {
+  try {
+    const game = games[gameId];
+    if (!game) return;
+    const activePlayer = Object.values(game.players).find((player) => player.isActive);
+    if (activePlayer) return activePlayer.index;
+  } catch (error) {
+    throw new Error('Error while getting room list');
+  }
+};

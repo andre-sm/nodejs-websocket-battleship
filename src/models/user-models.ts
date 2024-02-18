@@ -62,6 +62,7 @@ export interface GamePlayerData {
   name: string;
   ships: CustomShip[];
   board: Array<Array<string>>;
+  isActive: boolean;
 }
 
 export interface Game {

@@ -18,6 +18,15 @@ const handleAddShips = async (socket: CustomWebSocket, data: string): Promise<vo
       }));
 
       broadcastToBoth('start_game', responseData);
+
+      const activePlayer = store.getActivePlayer(gameId);
+      if (activePlayer) {
+        const gameTurnData = [{
+          [activePlayer]: JSON.stringify({ currentPlayer: activePlayer }),
+        }];
+
+        broadcastToBoth('turn', gameTurnData);
+      }
     }
   } catch (error) {
     console.error('Error: Internal server error');

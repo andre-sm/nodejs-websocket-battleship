@@ -19,7 +19,7 @@ export const createGameBoard = (ships: Ship[]) => {
     }
 
     coordinates.forEach((coordinate) => {
-      board[coordinate.y][coordinate.x] = 'S';
+      board[coordinate.x][coordinate.y] = 'S';
     });
 
     return {
