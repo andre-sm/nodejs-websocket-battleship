@@ -54,41 +54,61 @@ const handleAttack = async (socket: CustomWebSocket, data: string): Promise<void
       store.decreaseShipHealth(gameId, opponentPlayer.index, hitShipIndex);
       const hitShip = enemyShips[hitShipIndex];
 
-      const gameTurnData = [{
+      const gameTurnResponseData = [{
         [indexPlayer]: JSON.stringify({ currentPlayer: indexPlayer }),
+      }, {
+        [opponentPlayer.index]: JSON.stringify({ currentPlayer: indexPlayer }),
       }];
 
       if (hitShip.health === 0) {
         const attackResponseData = [{
           [indexPlayer]: JSON.stringify({ position: { x, y }, currentPlayer: indexPlayer, status: 'killed' }),
+        }, {
+          [opponentPlayer.index]: JSON.stringify({ position: { x, y }, currentPlayer: indexPlayer, status: 'killed' }),
         }];
         broadcastToBoth('attack', attackResponseData);
-        broadcastToBoth('turn', gameTurnData);
+        broadcastToBoth('turn', gameTurnResponseData);
 
         const surroundCoordinates = getSurroundCoordinates(hitShip.coordinates);
 
         surroundCoordinates.forEach((coord) => {
           const responseData = [{
             [indexPlayer]: JSON.stringify({ position: coord, currentPlayer: indexPlayer, status: 'miss' }),
+          }, {
+            [opponentPlayer.index]: JSON.stringify({ position: coord, currentPlayer: indexPlayer, status: 'miss' }),
           }];
           broadcastToBoth('attack', responseData);
-          broadcastToBoth('turn', gameTurnData);
+          broadcastToBoth('turn', gameTurnResponseData);
         });
+
+        const areAllShipsKilled = store.checkShipsHealth(gameId, opponentPlayer.index);
+
+        if (areAllShipsKilled) {
+          const finishResponseData = [{ [indexPlayer]: JSON.stringify({ winPlayer: indexPlayer }) },
+            { [opponentPlayer.index]: JSON.stringify({ winPlayer: indexPlayer }) }];
+          broadcastToBoth('finish', finishResponseData);
+        }
       } else {
         const attackResponseData = [{
           [indexPlayer]: JSON.stringify({ position: { x, y }, currentPlayer: indexPlayer, status: 'shot' }),
+        }, {
+          [opponentPlayer.index]: JSON.stringify({ position: { x, y }, currentPlayer: indexPlayer, status: 'shot' }),
         }];
         broadcastToBoth('attack', attackResponseData);
-        broadcastToBoth('turn', gameTurnData);
+        broadcastToBoth('turn', gameTurnResponseData);
       }
     } else {
       const attackResponseData = [{
         [indexPlayer]: JSON.stringify({ position: { x, y }, currentPlayer: indexPlayer, status: 'miss' }),
+      }, {
+        [opponentPlayer.index]: JSON.stringify({ position: { x, y }, currentPlayer: indexPlayer, status: 'miss' }),
       }];
       broadcastToBoth('attack', attackResponseData);
 
       const gameTurnData = [{
         [opponentPlayer.index]: JSON.stringify({ currentPlayer: opponentPlayer.index }),
+      }, {
+        [indexPlayer]: JSON.stringify({ currentPlayer: opponentPlayer.index }),
       }];
       broadcastToBoth('turn', gameTurnData);
 

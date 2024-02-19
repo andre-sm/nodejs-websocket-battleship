@@ -1,5 +1,5 @@
 import {
-  Player, PlayerResponse, Room, Game, RoomPlayerData, CustomShip, Ship,
+  Player, PlayerResponse, Room, Game, RoomPlayerData, CustomShip,
 } from '../models/user-models';
 
 const players: Player[] = [];
@@ -158,6 +158,14 @@ export const changeActivePlayer = (gameId: number, currentActivePlayerId: number
 export const decreaseShipHealth = (gameId: number, playerId: number, shipIndex: number) => {
   try {
     games[gameId].players[playerId].ships[shipIndex].health -= 1;
+  } catch (error) {
+    throw new Error('Error while getting room list');
+  }
+};
+
+export const checkShipsHealth = (gameId: number, playerId: number) => {
+  try {
+    return games[gameId].players[playerId].ships.every((ship) => ship.health === 0);
   } catch (error) {
     throw new Error('Error while getting room list');
   }
