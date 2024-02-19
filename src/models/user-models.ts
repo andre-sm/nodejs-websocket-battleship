@@ -78,3 +78,8 @@ export interface GameBoardShipsRequest {
   ships: Ship[];
   indexPlayer: number;
 }
+
+export interface Win {
+  name: string;
+  wins: number;
+}

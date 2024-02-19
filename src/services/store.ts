@@ -1,10 +1,11 @@
 import {
-  Player, PlayerResponse, Room, Game, RoomPlayerData, CustomShip,
+  Player, PlayerResponse, Room, Game, RoomPlayerData, CustomShip, Win,
 } from '../models/user-models';
 
 const players: Player[] = [];
 const rooms: Room[] = [];
 const games: { [key: string]: Game; } = {};
+const winners: { [key: string]: Win; } = {};
 
 export const addPlayer = (name: string, password: string, id: number): PlayerResponse => {
   try {
@@ -168,5 +169,29 @@ export const checkShipsHealth = (gameId: number, playerId: number) => {
     return games[gameId].players[playerId].ships.every((ship) => ship.health === 0);
   } catch (error) {
     throw new Error('Error while getting room list');
+  }
+};
+
+export const addWinToTable = (playerId: number) => {
+  try {
+    const playerName = players.find((player) => player.id === playerId)?.name as string;
+    if (winners[playerId]) {
+      winners[playerId].wins += 1;
+    } else {
+      winners[playerId] = {
+        name: playerName,
+        wins: 1,
+      };
+    }
+  } catch (error) {
+    throw new Error('Error while increasing win for player');
+  }
+};
+
+export const getWinsTable = () => {
+  try {
+    return Object.values(winners);
+  } catch (error) {
+    throw new Error('Error while getting wins table');
   }
 };

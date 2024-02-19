@@ -1,7 +1,7 @@
 import { AttackRequest } from '../models/game-play-models';
 import { CustomWebSocket, GameBoardShipsRequest, GamePlayerData } from '../models/user-models';
 import * as store from '../services/store';
-import { broadcastToBoth } from '../utils/broadcast';
+import { broadcastToAll, broadcastToBoth } from '../utils/broadcast';
 import { createGameBoard } from '../utils/create-game-board';
 import { getSurroundCoordinates } from '../utils/get-surround-coordinates';
 
@@ -84,9 +84,19 @@ const handleAttack = async (socket: CustomWebSocket, data: string): Promise<void
         const areAllShipsKilled = store.checkShipsHealth(gameId, opponentPlayer.index);
 
         if (areAllShipsKilled) {
+          store.addWinToTable(indexPlayer);
+
           const finishResponseData = [{ [indexPlayer]: JSON.stringify({ winPlayer: indexPlayer }) },
             { [opponentPlayer.index]: JSON.stringify({ winPlayer: indexPlayer }) }];
           broadcastToBoth('finish', finishResponseData);
+
+          const updateWinnersResponse = {
+            type: 'update_winners',
+            data: JSON.stringify(store.getWinsTable()),
+            id: 0,
+          };
+
+          broadcastToAll(JSON.stringify(updateWinnersResponse));
         }
       } else {
         const attackResponseData = [{
@@ -115,7 +125,7 @@ const handleAttack = async (socket: CustomWebSocket, data: string): Promise<void
       store.changeActivePlayer(gameId, indexPlayer);
     }
   } catch (error) {
-    console.error('Error: Internal server error');
+    console.error('Error: Internal server error', error);
   }
 };
 

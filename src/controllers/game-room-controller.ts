@@ -16,7 +16,14 @@ const handleRoomCreation = async (socket: CustomWebSocket): Promise<void> => {
       id: 0,
     };
 
+    const updateWinnersResponse = {
+      type: 'update_winners',
+      data: JSON.stringify(store.getWinsTable()),
+      id: 0,
+    };
+
     broadcastToAll(JSON.stringify(updateRoomResponse));
+    broadcastToAll(JSON.stringify(updateWinnersResponse));
   } catch (error) {
     console.error('Error: Internal server error');
   }
@@ -44,7 +51,14 @@ const handleAddToRoom = async (socket: CustomWebSocket, data: string): Promise<v
       id: 0,
     };
 
+    const updateWinnersResponse = {
+      type: 'update_winners',
+      data: JSON.stringify(store.getWinsTable()),
+      id: 0,
+    };
+
     broadcastToAll(JSON.stringify(updateRoomResponse));
+    broadcastToAll(JSON.stringify(updateWinnersResponse));
   } catch (error) {
     console.error('Error: Internal server error');
   }
