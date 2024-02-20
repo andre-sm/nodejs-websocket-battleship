@@ -1,16 +1,20 @@
 import { AttackRequest } from '../models/game-play-models';
-import { CustomWebSocket, GameBoardShipsRequest, GamePlayerData } from '../models/user-models';
+import {
+  CustomWebSocket, GameBoardShipsRequest, GamePlayerData,
+} from '../models/user-models';
 import * as store from '../services/store';
 import { broadcastToAll, broadcastToBoth } from '../utils/broadcast';
-import { createGameBoard } from '../utils/create-game-board';
+import { getRandomCoordinate } from '../utils/get-random-coordinate';
+import { getShipCoordinates } from '../utils/get-ship-coordinates';
 import { getSurroundCoordinates } from '../utils/get-surround-coordinates';
 
 const handleAddShips = async (socket: CustomWebSocket, data: string): Promise<void> => {
   try {
     const { gameId, ships, indexPlayer }: GameBoardShipsRequest = JSON.parse(data);
-    const { board, shipsCoords } = createGameBoard(ships);
+    const shipsWithCoords = getShipCoordinates(ships);
+    const board = new Array(10).fill('empty').map(() => new Array(10).fill('empty'));
 
-    const playersShipData = store.addShipsToGameBoard(gameId, indexPlayer, shipsCoords, board);
+    const playersShipData = store.addShipsToGameBoard(gameId, indexPlayer, shipsWithCoords, board);
 
     if (playersShipData) {
       const responseData = playersShipData.map((player) => ({
@@ -36,11 +40,20 @@ const handleAddShips = async (socket: CustomWebSocket, data: string): Promise<vo
 
 const handleAttack = async (socket: CustomWebSocket, data: string): Promise<void> => {
   try {
-    const {
-      gameId, x, y, indexPlayer,
-    }: AttackRequest = JSON.parse(data);
+    const requestData: AttackRequest = JSON.parse(data);
+
+    const { gameId, indexPlayer } = requestData;
+    let { x, y } = requestData;
+
     const opponentPlayer = store.getOpponentPlayer(gameId, indexPlayer) as GamePlayerData;
-    const enemyShips = (opponentPlayer.ships);
+    const enemyShips = opponentPlayer.ships;
+
+    if (x === undefined && y === undefined) {
+      const { board } = opponentPlayer;
+      const randomCoordinate = getRandomCoordinate(board);
+      x = randomCoordinate.x;
+      y = randomCoordinate.y;
+    }
 
     let hitShipIndex = -1;
     for (let i = 0; i < enemyShips.length; i += 1) {
@@ -69,9 +82,15 @@ const handleAttack = async (socket: CustomWebSocket, data: string): Promise<void
         broadcastToBoth('attack', attackResponseData);
         broadcastToBoth('turn', gameTurnResponseData);
 
+        hitShip.coordinates.forEach((coord) => {
+          store.changeBoardCellStatus(gameId, opponentPlayer.index, coord.x, coord.y, 'kill');
+        });
+
         const surroundCoordinates = getSurroundCoordinates(hitShip.coordinates);
 
         surroundCoordinates.forEach((coord) => {
+          store.changeBoardCellStatus(gameId, opponentPlayer.index, coord.x, coord.y, 'miss');
+
           const responseData = [{
             [indexPlayer]: JSON.stringify({ position: coord, currentPlayer: indexPlayer, status: 'miss' }),
           }, {
@@ -99,6 +118,8 @@ const handleAttack = async (socket: CustomWebSocket, data: string): Promise<void
           broadcastToAll(JSON.stringify(updateWinnersResponse));
         }
       } else {
+        store.changeBoardCellStatus(gameId, opponentPlayer.index, x, y, 'shot');
+
         const attackResponseData = [{
           [indexPlayer]: JSON.stringify({ position: { x, y }, currentPlayer: indexPlayer, status: 'shot' }),
         }, {
@@ -108,6 +129,8 @@ const handleAttack = async (socket: CustomWebSocket, data: string): Promise<void
         broadcastToBoth('turn', gameTurnResponseData);
       }
     } else {
+      store.changeBoardCellStatus(gameId, opponentPlayer.index, x, y, 'miss');
+
       const attackResponseData = [{
         [indexPlayer]: JSON.stringify({ position: { x, y }, currentPlayer: indexPlayer, status: 'miss' }),
       }, {
@@ -124,6 +147,8 @@ const handleAttack = async (socket: CustomWebSocket, data: string): Promise<void
 
       store.changeActivePlayer(gameId, indexPlayer);
     }
+
+    // console.log(opponentPlayer.board);
   } catch (error) {
     console.error('Error: Internal server error', error);
   }

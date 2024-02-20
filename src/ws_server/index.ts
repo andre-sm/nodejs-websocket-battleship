@@ -29,6 +29,10 @@ export const handleWsConnection = async (socket: CustomWebSocket) => {
           handleAttack(socket, data);
           break;
 
+        case 'randomAttack':
+          handleAttack(socket, data);
+          break;
+
         default:
           break;
       }

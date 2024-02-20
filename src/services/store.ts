@@ -195,3 +195,11 @@ export const getWinsTable = () => {
     throw new Error('Error while getting wins table');
   }
 };
+
+export const changeBoardCellStatus = (gameId: number, playerId: number, x: number, y: number, status: string) => {
+  try {
+    games[gameId].players[playerId].board[x][y] = status;
+  } catch (error) {
+    throw new Error('Error while getting wins table');
+  }
+};
