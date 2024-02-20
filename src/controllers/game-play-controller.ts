@@ -45,6 +45,11 @@ const handleAttack = async (socket: CustomWebSocket, data: string): Promise<void
     const { gameId, indexPlayer } = requestData;
     let { x, y } = requestData;
 
+    const activePlayerId = store.getActivePlayer(gameId);
+    if (indexPlayer !== activePlayerId) {
+      return;
+    }
+
     const opponentPlayer = store.getOpponentPlayer(gameId, indexPlayer) as GamePlayerData;
     const enemyShips = opponentPlayer.ships;
 
