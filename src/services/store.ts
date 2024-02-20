@@ -173,7 +173,7 @@ export const checkShipsHealth = (gameId: number, playerId: number) => {
 
 export const addWinToTable = (playerId: number) => {
   try {
-    const playerName = players.find((player) => player.id === playerId)?.name as string;
+    const playerName = players[playerId].name;
     if (winners[playerId]) {
       winners[playerId].wins += 1;
     } else {

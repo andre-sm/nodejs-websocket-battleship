@@ -14,7 +14,7 @@ export const getSurroundCoordinates = (shipCoordinates: Coordinate[]) => {
 
   return surroundCoordinates.filter((coordinate) => coordinate.x >= 0
     && coordinate.y >= 0
-    && coordinate.x <= 10
-    && coordinate.y <= 10
+    && coordinate.x < 10
+    && coordinate.y < 10
     && !shipCoordinates.some((coord) => coordinate.x === coord.x && coordinate.y === coord.y));
 };
