@@ -1,22 +1,22 @@
 import {
-  Player, PlayerResponse, Room, Game, RoomPlayerData, CustomShip, Win,
-} from '../models/user-models';
+  Player, Room, Game, RoomPlayerData, CustomShip, Win,
+} from '../models/player-models';
 
-const players: Player[] = [];
+const players: { [key: string]: Player; } = {};
 const rooms: Room[] = [];
 const games: { [key: string]: Game; } = {};
 const winners: { [key: string]: Win; } = {};
 
-export const addPlayer = (name: string, password: string, id: number): PlayerResponse => {
+export const addPlayer = (name: string, password: string, id: number): boolean => {
   try {
-    players.push({ id, name, password });
+    const isAlreadyExist = Object.values(players).find((player) => player.name === name);
 
-    return {
-      index: id,
-      name,
-      error: false,
-      errorText: '',
-    };
+    if (isAlreadyExist) {
+      return false;
+    }
+
+    players[id] = { id, name, password };
+    return true;
   } catch (error) {
     throw new Error('Error while adding new player');
   }
@@ -49,11 +49,10 @@ export const getRoomList = () => {
 export const addPlayerToRoom = (roomId: number, playerId: number) => {
   try {
     const roomIndex = rooms.findIndex((room) => room.roomId === roomId);
-    const playerIndex = players.findIndex((player) => player.id === playerId);
 
     const playerData = {
       index: playerId,
-      name: players[playerIndex].name,
+      name: players[playerId].name,
     };
 
     const isExist = rooms[roomIndex].roomUsers.find((roomPlayer) => roomPlayer.index === playerId);

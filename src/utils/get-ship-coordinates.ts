@@ -1,4 +1,4 @@
-import { Ship } from '../models/user-models';
+import { Ship } from '../models/player-models';
 
 export const getShipCoordinates = (ships: Ship[]) => ships.map((shipData) => {
   const coordinates = [];

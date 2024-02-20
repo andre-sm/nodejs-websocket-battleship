@@ -1,4 +1,4 @@
-import { BaseRequest, CustomWebSocket } from '../models/user-models';
+import { BaseRequest, CustomWebSocket } from '../models/player-models';
 import { handleUserAuth } from '../controllers/user-controller';
 import { handleRoomCreation, handleAddToRoom } from '../controllers/game-room-controller';
 import { handleAddShips, handleAttack } from '../controllers/game-play-controller';

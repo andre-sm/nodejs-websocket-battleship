@@ -1,7 +1,7 @@
 import { AttackRequest } from '../models/game-play-models';
 import {
   CustomWebSocket, GameBoardShipsRequest, GamePlayerData,
-} from '../models/user-models';
+} from '../models/player-models';
 import * as store from '../services/store';
 import { broadcastToAll, broadcastToBoth } from '../utils/broadcast';
 import { getRandomCoordinate } from '../utils/get-random-coordinate';

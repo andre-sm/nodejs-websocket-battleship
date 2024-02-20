@@ -1,7 +1,7 @@
 import { WebSocket } from 'ws';
 
 export interface CustomWebSocket extends WebSocket {
-  userId: number;
+  playerId: number;
 }
 
 export interface BaseRequest {
@@ -19,13 +19,6 @@ export interface Player {
   id: number;
   name: string;
   password: string;
-}
-
-export interface PlayerResponse {
-  index: number;
-  name: string;
-  error: boolean,
-  errorText: string;
 }
 
 export interface RoomPlayerData {

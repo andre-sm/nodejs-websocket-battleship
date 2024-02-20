@@ -1,5 +1,5 @@
 import { WebSocketServer } from 'ws';
-import { CustomWebSocket } from '../models/user-models';
+import { CustomWebSocket } from '../models/player-models';
 
 let wssInstanse: WebSocketServer;
 
@@ -15,12 +15,12 @@ export const broadcastToAll = (msg: string) => {
 
 export const broadcastToBoth = (type: string, data: { [key: string]: string; }[]) => {
   wssInstanse.clients.forEach((client) => {
-    const { userId } = client as CustomWebSocket;
-    const player = data.find((item) => item[userId]);
+    const { playerId } = client as CustomWebSocket;
+    const player = data.find((item) => item[playerId]);
     if (player) {
       const msg = {
         type,
-        data: player[userId],
+        data: player[playerId],
         id: 0,
       };
       client.send(JSON.stringify(msg));

@@ -1,4 +1,4 @@
-import { Coordinate } from '../models/user-models';
+import { Coordinate } from '../models/player-models';
 
 export const getRandomCoordinate = ((board: Array<Array<string>>) => {
   const emptyCells: Coordinate[] = [];
