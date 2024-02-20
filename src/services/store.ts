@@ -3,7 +3,7 @@ import {
 } from '../models/player-models';
 
 const players: { [key: string]: Player; } = {};
-const rooms: Room[] = [];
+const rooms: { [key: string]: Room; } = {};
 const games: { [key: string]: Game; } = {};
 const winners: { [key: string]: Win; } = {};
 
@@ -30,7 +30,7 @@ export const createRoom = (id: number) => {
       board: [],
       position: [],
     };
-    rooms.push(newRoom);
+    rooms[id] = newRoom;
   } catch (error) {
     throw new Error('Error while new room creation');
   }
@@ -38,7 +38,7 @@ export const createRoom = (id: number) => {
 
 export const getRoomList = () => {
   try {
-    return rooms
+    return Object.values(rooms)
       .filter((room) => room.roomUsers.length === 1)
       .map((room) => ({ roomId: room.roomId, roomUsers: room.roomUsers }));
   } catch (error) {
@@ -48,20 +48,18 @@ export const getRoomList = () => {
 
 export const addPlayerToRoom = (roomId: number, playerId: number) => {
   try {
-    const roomIndex = rooms.findIndex((room) => room.roomId === roomId);
-
     const playerData = {
       index: playerId,
       name: players[playerId].name,
     };
 
-    const isExist = rooms[roomIndex].roomUsers.find((roomPlayer) => roomPlayer.index === playerId);
+    const isExist = rooms[roomId].roomUsers.find((roomPlayer) => roomPlayer.index === playerId);
 
     if (!isExist) {
-      rooms[roomIndex].roomUsers.push(playerData);
+      rooms[roomId].roomUsers.push(playerData);
     }
 
-    return rooms[roomIndex].roomUsers;
+    return rooms[roomId].roomUsers;
   } catch (error) {
     throw new Error('Error while adding new player to room');
   }
