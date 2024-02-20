@@ -50,73 +50,77 @@ const handleAttack = async (socket: CustomWebSocket, data: string): Promise<void
 
     const opponentPlayer = store.getOpponentPlayer(gameId, indexPlayer) as GamePlayerData;
     const playersIds = [indexPlayer, opponentPlayer.index];
-    const enemyShips = opponentPlayer.ships;
+    const { board, ships: enemyShips } = opponentPlayer;
 
     if (x === undefined && y === undefined) {
-      const { board } = opponentPlayer;
       const randomCoordinate = getRandomCoordinate(board);
       x = randomCoordinate.x;
       y = randomCoordinate.y;
     }
 
-    let hitShipIndex = -1;
-    for (let i = 0; i < enemyShips.length; i += 1) {
-      const ship = enemyShips[i];
-      if (ship.coordinates.some((coordinate) => coordinate.x === x && coordinate.y === y)) {
-        hitShipIndex = i;
+    if (board[x][y] === 'empty' || board[x][y] === 'miss') {
+      let hitShipIndex = -1;
+      for (let i = 0; i < enemyShips.length; i += 1) {
+        const ship = enemyShips[i];
+        if (ship.coordinates.some((coordinate) => coordinate.x === x && coordinate.y === y)) {
+          hitShipIndex = i;
+        }
       }
-    }
 
-    if (hitShipIndex !== -1) {
-      store.decreaseShipHealth(gameId, opponentPlayer.index, hitShipIndex);
-      const hitShip = enemyShips[hitShipIndex];
+      if (hitShipIndex !== -1) {
+        store.decreaseShipHealth(gameId, opponentPlayer.index, hitShipIndex);
 
-      const gameTurnData = JSON.stringify({ currentPlayer: indexPlayer });
+        const hitShip = enemyShips[hitShipIndex];
 
-      if (hitShip.health === 0) {
-        const killAttackData = JSON.stringify({ position: { x, y }, currentPlayer: indexPlayer, status: 'killed' });
-        broadcastToBothTheSame('attack', killAttackData, playersIds);
-        broadcastToBothTheSame('turn', gameTurnData, playersIds);
+        const gameTurnData = JSON.stringify({ currentPlayer: indexPlayer });
 
-        hitShip.coordinates.forEach((coord) => {
-          store.changeBoardCellStatus(gameId, opponentPlayer.index, coord.x, coord.y, 'kill');
-        });
-
-        const surroundCoordinates = getSurroundCoordinates(hitShip.coordinates);
-
-        surroundCoordinates.forEach((coord) => {
-          store.changeBoardCellStatus(gameId, opponentPlayer.index, coord.x, coord.y, 'miss');
-
-          const missAttackData = JSON.stringify({ position: coord, currentPlayer: indexPlayer, status: 'miss' });
-
-          broadcastToBothTheSame('attack', missAttackData, playersIds);
+        if (hitShip.health === 0) {
+          const killAttackData = JSON.stringify({ position: { x, y }, currentPlayer: indexPlayer, status: 'killed' });
+          broadcastToBothTheSame('attack', killAttackData, playersIds);
           broadcastToBothTheSame('turn', gameTurnData, playersIds);
-        });
 
-        const areAllShipsKilled = store.checkShipsHealth(gameId, opponentPlayer.index);
+          hitShip.coordinates.forEach((coord) => {
+            store.changeBoardCellStatus(gameId, opponentPlayer.index, coord.x, coord.y, 'kill');
+          });
 
-        if (areAllShipsKilled) {
-          store.addWinToTable(indexPlayer);
+          const surroundCoordinates = getSurroundCoordinates(hitShip.coordinates);
 
-          const finishData = JSON.stringify({ winPlayer: indexPlayer });
-          broadcastToBothTheSame('finish', finishData, playersIds);
-          broadcastToAll('update_winners', JSON.stringify(store.getWinsTable()));
+          surroundCoordinates.forEach((coord) => {
+            store.changeBoardCellStatus(gameId, opponentPlayer.index, coord.x, coord.y, 'miss');
+
+            const missAttackData = JSON.stringify({ position: coord, currentPlayer: indexPlayer, status: 'miss' });
+
+            broadcastToBothTheSame('attack', missAttackData, playersIds);
+            broadcastToBothTheSame('turn', gameTurnData, playersIds);
+          });
+
+          const areAllShipsKilled = store.checkShipsHealth(gameId, opponentPlayer.index);
+
+          if (areAllShipsKilled) {
+            store.addWinToTable(indexPlayer);
+
+            const finishData = JSON.stringify({ winPlayer: indexPlayer });
+            broadcastToBothTheSame('finish', finishData, playersIds);
+            broadcastToAll('update_winners', JSON.stringify(store.getWinsTable()));
+          }
+        } else {
+          store.changeBoardCellStatus(gameId, opponentPlayer.index, x, y, 'shot');
+
+          const shotAttackData = JSON.stringify({ position: { x, y }, currentPlayer: indexPlayer, status: 'shot' });
+          broadcastToBothTheSame('attack', shotAttackData, playersIds);
+          broadcastToBothTheSame('turn', gameTurnData, playersIds);
         }
       } else {
-        store.changeBoardCellStatus(gameId, opponentPlayer.index, x, y, 'shot');
+        store.changeBoardCellStatus(gameId, opponentPlayer.index, x, y, 'miss');
 
-        const shotAttackData = JSON.stringify({ position: { x, y }, currentPlayer: indexPlayer, status: 'shot' });
-        broadcastToBothTheSame('attack', shotAttackData, playersIds);
-        broadcastToBothTheSame('turn', gameTurnData, playersIds);
+        const missAttackData = JSON.stringify({ position: { x, y }, currentPlayer: indexPlayer, status: 'miss' });
+        broadcastToBothTheSame('attack', missAttackData, playersIds);
+        broadcastToBothTheSame('turn', JSON.stringify({ currentPlayer: opponentPlayer.index }), playersIds);
+
+        store.changeActivePlayer(gameId, indexPlayer);
       }
     } else {
-      store.changeBoardCellStatus(gameId, opponentPlayer.index, x, y, 'miss');
-
-      const missAttackData = JSON.stringify({ position: { x, y }, currentPlayer: indexPlayer, status: 'miss' });
-      broadcastToBothTheSame('attack', missAttackData, playersIds);
-      broadcastToBothTheSame('turn', JSON.stringify({ currentPlayer: opponentPlayer.index }), playersIds);
-
-      store.changeActivePlayer(gameId, indexPlayer);
+      broadcastToBothTheSame('turn', JSON.stringify({ currentPlayer: indexPlayer }), playersIds);
     }
   } catch (error) {
     console.error('Error: Internal server error', error);
