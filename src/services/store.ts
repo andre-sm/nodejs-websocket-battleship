@@ -199,6 +199,6 @@ export const changeBoardCellStatus = (gameId: number, playerId: number, x: numbe
   try {
     games[gameId].players[playerId].board[x][y] = status;
   } catch (error) {
-    throw new Error('Error while getting wins table');
+    throw new Error('Error while changeing cell status');
   }
 };

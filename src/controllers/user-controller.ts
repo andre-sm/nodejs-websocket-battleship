@@ -1,4 +1,4 @@
-import { PlayerAuthData, PlayerResponse, CustomWebSocket } from '../models/player-models';
+import { PlayerAuthData, CustomWebSocket } from '../models/player-models';
 import { createId } from '../utils/create-id';
 import * as store from '../services/store';
 import { broadcastToAll } from '../utils/broadcast';
@@ -27,13 +27,10 @@ const handleUserAuth = async (socket: CustomWebSocket, data: string): Promise<vo
 
     socket.send(JSON.stringify(authResponse));
 
-    const updateRoomResponse = {
-      type: 'update_room',
-      data: JSON.stringify(store.getRoomList()),
-      id: 0,
-    };
-
-    broadcastToAll(JSON.stringify(updateRoomResponse));
+    if (isSuccessful) {
+      broadcastToAll('update_room', JSON.stringify(store.getRoomList()));
+      broadcastToAll('update_winners', JSON.stringify(store.getWinsTable()));
+    }
   } catch (error) {
     console.error('Error: Internal server error');
   }

@@ -1,7 +1,7 @@
 import { CustomWebSocket } from '../models/player-models';
 import * as store from '../services/store';
 import { createId } from '../utils/create-id';
-import { broadcastToAll, broadcastToBoth } from '../utils/broadcast';
+import { broadcastToAll, broadcastToBothDiff } from '../utils/broadcast';
 
 const handleRoomCreation = async (socket: CustomWebSocket): Promise<void> => {
   try {
@@ -10,20 +10,8 @@ const handleRoomCreation = async (socket: CustomWebSocket): Promise<void> => {
     store.createRoom(roomId);
     store.addPlayerToRoom(roomId, socket.playerId);
 
-    const updateRoomResponse = {
-      type: 'update_room',
-      data: JSON.stringify(store.getRoomList()),
-      id: 0,
-    };
-
-    const updateWinnersResponse = {
-      type: 'update_winners',
-      data: JSON.stringify(store.getWinsTable()),
-      id: 0,
-    };
-
-    broadcastToAll(JSON.stringify(updateRoomResponse));
-    broadcastToAll(JSON.stringify(updateWinnersResponse));
+    broadcastToAll('update_room', JSON.stringify(store.getRoomList()));
+    broadcastToAll('update_winners', JSON.stringify(store.getWinsTable()));
   } catch (error) {
     console.error('Error: Internal server error');
   }
@@ -38,27 +26,15 @@ const handleAddToRoom = async (socket: CustomWebSocket, data: string): Promise<v
       const gameId = createId();
       store.createGame(gameId, roomPlayers);
 
-      const responseData = roomPlayers.map((player) => ({
+      const createGameData = roomPlayers.map((player) => ({
         [player.index]: JSON.stringify({ idGame: gameId, idPlayer: player.index }),
       }));
 
-      broadcastToBoth('create_game', responseData);
+      broadcastToBothDiff('create_game', createGameData);
     }
 
-    const updateRoomResponse = {
-      type: 'update_room',
-      data: JSON.stringify(store.getRoomList()),
-      id: 0,
-    };
-
-    const updateWinnersResponse = {
-      type: 'update_winners',
-      data: JSON.stringify(store.getWinsTable()),
-      id: 0,
-    };
-
-    broadcastToAll(JSON.stringify(updateRoomResponse));
-    broadcastToAll(JSON.stringify(updateWinnersResponse));
+    broadcastToAll('update_room', JSON.stringify(store.getRoomList()));
+    broadcastToAll('update_winners', JSON.stringify(store.getWinsTable()));
   } catch (error) {
     console.error('Error: Internal server error');
   }

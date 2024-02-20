@@ -3,7 +3,7 @@ import {
   CustomWebSocket, GameBoardShipsRequest, GamePlayerData,
 } from '../models/player-models';
 import * as store from '../services/store';
-import { broadcastToAll, broadcastToBoth } from '../utils/broadcast';
+import { broadcastToAll, broadcastToBothDiff, broadcastToBothTheSame } from '../utils/broadcast';
 import { getRandomCoordinate } from '../utils/get-random-coordinate';
 import { getShipCoordinates } from '../utils/get-ship-coordinates';
 import { getSurroundCoordinates } from '../utils/get-surround-coordinates';
@@ -22,15 +22,13 @@ const handleAddShips = async (socket: CustomWebSocket, data: string): Promise<vo
         JSON.stringify({ ships: player.ships, currentPlayerIndex: player.currentPlayerIndex }),
       }));
 
-      broadcastToBoth('start_game', responseData);
+      broadcastToBothDiff('start_game', responseData);
 
       const activePlayer = store.getActivePlayer(gameId);
-      if (activePlayer) {
-        const gameTurnData = [{
-          [activePlayer]: JSON.stringify({ currentPlayer: activePlayer }),
-        }];
+      const playersIds = playersShipData.map((player) => player.currentPlayerIndex);
 
-        broadcastToBoth('turn', gameTurnData);
+      if (activePlayer) {
+        broadcastToBothTheSame('turn', JSON.stringify({ currentPlayer: activePlayer }), playersIds);
       }
     }
   } catch (error) {
@@ -51,6 +49,7 @@ const handleAttack = async (socket: CustomWebSocket, data: string): Promise<void
     }
 
     const opponentPlayer = store.getOpponentPlayer(gameId, indexPlayer) as GamePlayerData;
+    const playersIds = [indexPlayer, opponentPlayer.index];
     const enemyShips = opponentPlayer.ships;
 
     if (x === undefined && y === undefined) {
@@ -72,20 +71,12 @@ const handleAttack = async (socket: CustomWebSocket, data: string): Promise<void
       store.decreaseShipHealth(gameId, opponentPlayer.index, hitShipIndex);
       const hitShip = enemyShips[hitShipIndex];
 
-      const gameTurnResponseData = [{
-        [indexPlayer]: JSON.stringify({ currentPlayer: indexPlayer }),
-      }, {
-        [opponentPlayer.index]: JSON.stringify({ currentPlayer: indexPlayer }),
-      }];
+      const gameTurnData = JSON.stringify({ currentPlayer: indexPlayer });
 
       if (hitShip.health === 0) {
-        const attackResponseData = [{
-          [indexPlayer]: JSON.stringify({ position: { x, y }, currentPlayer: indexPlayer, status: 'killed' }),
-        }, {
-          [opponentPlayer.index]: JSON.stringify({ position: { x, y }, currentPlayer: indexPlayer, status: 'killed' }),
-        }];
-        broadcastToBoth('attack', attackResponseData);
-        broadcastToBoth('turn', gameTurnResponseData);
+        const killAttackData = JSON.stringify({ position: { x, y }, currentPlayer: indexPlayer, status: 'killed' });
+        broadcastToBothTheSame('attack', killAttackData, playersIds);
+        broadcastToBothTheSame('turn', gameTurnData, playersIds);
 
         hitShip.coordinates.forEach((coord) => {
           store.changeBoardCellStatus(gameId, opponentPlayer.index, coord.x, coord.y, 'kill');
@@ -96,13 +87,10 @@ const handleAttack = async (socket: CustomWebSocket, data: string): Promise<void
         surroundCoordinates.forEach((coord) => {
           store.changeBoardCellStatus(gameId, opponentPlayer.index, coord.x, coord.y, 'miss');
 
-          const responseData = [{
-            [indexPlayer]: JSON.stringify({ position: coord, currentPlayer: indexPlayer, status: 'miss' }),
-          }, {
-            [opponentPlayer.index]: JSON.stringify({ position: coord, currentPlayer: indexPlayer, status: 'miss' }),
-          }];
-          broadcastToBoth('attack', responseData);
-          broadcastToBoth('turn', gameTurnResponseData);
+          const missAttackData = JSON.stringify({ position: coord, currentPlayer: indexPlayer, status: 'miss' });
+
+          broadcastToBothTheSame('attack', missAttackData, playersIds);
+          broadcastToBothTheSame('turn', gameTurnData, playersIds);
         });
 
         const areAllShipsKilled = store.checkShipsHealth(gameId, opponentPlayer.index);
@@ -110,50 +98,26 @@ const handleAttack = async (socket: CustomWebSocket, data: string): Promise<void
         if (areAllShipsKilled) {
           store.addWinToTable(indexPlayer);
 
-          const finishResponseData = [{ [indexPlayer]: JSON.stringify({ winPlayer: indexPlayer }) },
-            { [opponentPlayer.index]: JSON.stringify({ winPlayer: indexPlayer }) }];
-          broadcastToBoth('finish', finishResponseData);
-
-          const updateWinnersResponse = {
-            type: 'update_winners',
-            data: JSON.stringify(store.getWinsTable()),
-            id: 0,
-          };
-
-          broadcastToAll(JSON.stringify(updateWinnersResponse));
+          const finishData = JSON.stringify({ winPlayer: indexPlayer });
+          broadcastToBothTheSame('finish', finishData, playersIds);
+          broadcastToAll('update_winners', JSON.stringify(store.getWinsTable()));
         }
       } else {
         store.changeBoardCellStatus(gameId, opponentPlayer.index, x, y, 'shot');
 
-        const attackResponseData = [{
-          [indexPlayer]: JSON.stringify({ position: { x, y }, currentPlayer: indexPlayer, status: 'shot' }),
-        }, {
-          [opponentPlayer.index]: JSON.stringify({ position: { x, y }, currentPlayer: indexPlayer, status: 'shot' }),
-        }];
-        broadcastToBoth('attack', attackResponseData);
-        broadcastToBoth('turn', gameTurnResponseData);
+        const shotAttackData = JSON.stringify({ position: { x, y }, currentPlayer: indexPlayer, status: 'shot' });
+        broadcastToBothTheSame('attack', shotAttackData, playersIds);
+        broadcastToBothTheSame('turn', gameTurnData, playersIds);
       }
     } else {
       store.changeBoardCellStatus(gameId, opponentPlayer.index, x, y, 'miss');
 
-      const attackResponseData = [{
-        [indexPlayer]: JSON.stringify({ position: { x, y }, currentPlayer: indexPlayer, status: 'miss' }),
-      }, {
-        [opponentPlayer.index]: JSON.stringify({ position: { x, y }, currentPlayer: indexPlayer, status: 'miss' }),
-      }];
-      broadcastToBoth('attack', attackResponseData);
-
-      const gameTurnData = [{
-        [opponentPlayer.index]: JSON.stringify({ currentPlayer: opponentPlayer.index }),
-      }, {
-        [indexPlayer]: JSON.stringify({ currentPlayer: opponentPlayer.index }),
-      }];
-      broadcastToBoth('turn', gameTurnData);
+      const missAttackData = JSON.stringify({ position: { x, y }, currentPlayer: indexPlayer, status: 'miss' });
+      broadcastToBothTheSame('attack', missAttackData, playersIds);
+      broadcastToBothTheSame('turn', JSON.stringify({ currentPlayer: opponentPlayer.index }), playersIds);
 
       store.changeActivePlayer(gameId, indexPlayer);
     }
-
-    // console.log(opponentPlayer.board);
   } catch (error) {
     console.error('Error: Internal server error', error);
   }
