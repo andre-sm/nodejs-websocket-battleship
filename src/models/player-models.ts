@@ -2,6 +2,10 @@ import { WebSocket } from 'ws';
 
 export interface CustomWebSocket extends WebSocket {
   playerId: number;
+  botInfo: {
+    isSinglePlay: boolean;
+    botId: number;
+  }
 }
 
 export interface BaseRequest {

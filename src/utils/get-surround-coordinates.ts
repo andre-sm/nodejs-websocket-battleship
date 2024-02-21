@@ -1,3 +1,4 @@
+import { BOARD_SIZE } from '../constants/ships';
 import { Coordinate } from '../models/player-models';
 
 export const getSurroundCoordinates = (shipCoordinates: Coordinate[]) => {
@@ -14,7 +15,7 @@ export const getSurroundCoordinates = (shipCoordinates: Coordinate[]) => {
 
   return surroundCoordinates.filter((coordinate) => coordinate.x >= 0
     && coordinate.y >= 0
-    && coordinate.x < 10
-    && coordinate.y < 10
+    && coordinate.x < BOARD_SIZE
+    && coordinate.y < BOARD_SIZE
     && !shipCoordinates.some((coord) => coordinate.x === coord.x && coordinate.y === coord.y));
 };

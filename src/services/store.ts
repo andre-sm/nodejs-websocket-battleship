@@ -22,6 +22,14 @@ export const addPlayer = (name: string, password: string, id: number): boolean =
   }
 };
 
+export const getPlayer = (id: number): Player => {
+  try {
+    return players[id];
+  } catch (error) {
+    throw new Error('Error while adding new player');
+  }
+};
+
 export const createRoom = (id: number) => {
   try {
     const newRoom = {

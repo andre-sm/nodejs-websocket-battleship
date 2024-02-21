@@ -7,12 +7,21 @@ import { broadcastToAll, broadcastToBothDiff, broadcastToBothTheSame } from '../
 import { getRandomCoordinate } from '../utils/get-random-coordinate';
 import { getShipCoordinates } from '../utils/get-ship-coordinates';
 import { getSurroundCoordinates } from '../utils/get-surround-coordinates';
+import { BOARD_SIZE } from '../constants/ships';
+import { createId } from '../utils/create-id';
+import { generateBotShips } from '../utils/generate-bot-ships';
 
 const handleAddShips = async (socket: CustomWebSocket, data: string): Promise<void> => {
   try {
     const { gameId, ships, indexPlayer }: GameBoardShipsRequest = JSON.parse(data);
     const shipsWithCoords = getShipCoordinates(ships);
-    const board = new Array(10).fill('empty').map(() => new Array(10).fill('empty'));
+
+    const board = new Array(BOARD_SIZE).fill('empty').map(() => new Array(BOARD_SIZE).fill('empty'));
+
+    if (socket.botInfo.isSinglePlay) {
+      const botShips = generateBotShips();
+      store.addShipsToGameBoard(gameId, socket.botInfo.botId, botShips, board);
+    }
 
     const playersShipData = store.addShipsToGameBoard(gameId, indexPlayer, shipsWithCoords, board);
 
@@ -127,7 +136,34 @@ const handleAttack = async (socket: CustomWebSocket, data: string): Promise<void
   }
 };
 
+const handleSinglePlay = async (socket: CustomWebSocket): Promise<void> => {
+  try {
+    const { playerId } = socket;
+    const botId = createId();
+
+    socket.botInfo = {
+      isSinglePlay: true,
+      botId,
+    };
+
+    const playerData = store.getPlayer(playerId);
+    const gameId = createId();
+
+    const gamePlayers = [{ index: playerId, name: playerData.name }, { index: botId, name: 'AI' }];
+    store.createGame(gameId, gamePlayers);
+
+    const createGameData = gamePlayers.map((player) => ({
+      [player.index]: JSON.stringify({ idGame: gameId, idPlayer: player.index }),
+    }));
+
+    broadcastToBothDiff('create_game', createGameData);
+  } catch (error) {
+    console.error('Error: Internal server error');
+  }
+};
+
 export {
   handleAddShips,
   handleAttack,
+  handleSinglePlay,
 };
