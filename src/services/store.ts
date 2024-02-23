@@ -123,18 +123,19 @@ export const addShipsToGameBoard
         }));
       }
     } catch (error) {
-      throw new Error('Error while adding new player to room');
+      throw new Error('Error while adding ships to game board');
     }
   };
 
 export const getActivePlayer = (gameId: number) => {
   try {
     const game = games[gameId];
+
     if (!game) return;
     const activePlayer = Object.values(game.players).find((player) => player.isActive);
     if (activePlayer) return activePlayer.index;
   } catch (error) {
-    throw new Error('Error while getting room list');
+    throw new Error('Error while getting active player');
   }
 };
 
@@ -142,7 +143,7 @@ export const getOpponentPlayer = (gameId: number, currentPlayerId: number) => {
   try {
     return Object.values(games[gameId].players).find((player) => player.index !== currentPlayerId);
   } catch (error) {
-    throw new Error('Error while getting room list');
+    throw new Error('Error while getting opponent player');
   }
 };
 
@@ -157,7 +158,7 @@ export const changeActivePlayer = (gameId: number, currentActivePlayerId: number
       }
     });
   } catch (error) {
-    throw new Error('Error while getting room list');
+    throw new Error('Error while changing active player');
   }
 };
 
@@ -165,7 +166,7 @@ export const decreaseShipHealth = (gameId: number, playerId: number, shipIndex: 
   try {
     games[gameId].players[playerId].ships[shipIndex].health -= 1;
   } catch (error) {
-    throw new Error('Error while getting room list');
+    throw new Error('Error while decreasing ship health');
   }
 };
 
@@ -173,7 +174,7 @@ export const checkShipsHealth = (gameId: number, playerId: number) => {
   try {
     return games[gameId].players[playerId].ships.every((ship) => ship.health === 0);
   } catch (error) {
-    throw new Error('Error while getting room list');
+    throw new Error('Error while checking ships health');
   }
 };
 

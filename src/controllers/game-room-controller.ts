@@ -22,7 +22,7 @@ const handleAddToRoom = async (socket: CustomWebSocket, data: string): Promise<v
     const { indexRoom } = JSON.parse(data);
     const roomPlayers = store.addPlayerToRoom(indexRoom, socket.playerId);
 
-    if (roomPlayers.length === 2) {
+    if (roomPlayers?.length === 2) {
       const gameId = createId();
       store.createGame(gameId, roomPlayers);
 

@@ -1,7 +1,8 @@
 import { BaseRequest, CustomWebSocket } from '../models/player-models';
 import { handleUserAuth } from '../controllers/user-controller';
 import { handleRoomCreation, handleAddToRoom } from '../controllers/game-room-controller';
-import { handleAddShips, handleAttack, handleSinglePlay } from '../controllers/game-play-controller';
+import { handleAddShips, handleAttack } from '../controllers/game-play-controller';
+import { handleSinglePlay } from '../controllers/bot-play-controller';
 
 export const handleWsConnection = async (socket: CustomWebSocket) => {
   socket.on('message', (msg: Buffer) => {
@@ -41,7 +42,7 @@ export const handleWsConnection = async (socket: CustomWebSocket) => {
           break;
       }
     } catch (error) {
-      console.error('Error: Internal server error');
+      console.error('Error: Internal server error', error);
     }
   });
 

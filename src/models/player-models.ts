@@ -5,6 +5,8 @@ export interface CustomWebSocket extends WebSocket {
   botInfo: {
     isSinglePlay: boolean;
     botId: number;
+    gameId: number;
+    isBotTurn: boolean;
   }
 }
 

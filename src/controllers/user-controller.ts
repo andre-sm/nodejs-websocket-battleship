@@ -9,11 +9,17 @@ const handleUserAuth = async (socket: CustomWebSocket, data: string): Promise<vo
 
     const id = createId();
     socket.playerId = id;
+    socket.botInfo = {
+      isSinglePlay: false,
+      botId: 0,
+      gameId: 0,
+      isBotTurn: false,
+    };
 
-    const isSuccessful = store.addPlayer(name, password, id);
+    const isSuccessful = store.addPlayer(name, password, socket.playerId);
 
     const authResponseData = {
-      index: id,
+      index: socket.playerId,
       name,
       error: !isSuccessful,
       errorText: isSuccessful ? '' : 'Error: Player with provided name already exists',

@@ -1,15 +1,13 @@
 import { AttackRequest } from '../models/game-play-models';
-import {
-  CustomWebSocket, GameBoardShipsRequest, GamePlayerData,
-} from '../models/player-models';
+import { CustomWebSocket, GameBoardShipsRequest, GamePlayerData } from '../models/player-models';
 import * as store from '../services/store';
 import { broadcastToAll, broadcastToBothDiff, broadcastToBothTheSame } from '../utils/broadcast';
 import { getRandomCoordinate } from '../utils/get-random-coordinate';
 import { getShipCoordinates } from '../utils/get-ship-coordinates';
 import { getSurroundCoordinates } from '../utils/get-surround-coordinates';
 import { BOARD_SIZE } from '../constants/ships';
-import { createId } from '../utils/create-id';
 import { generateBotShips } from '../utils/generate-bot-ships';
+import { handleBotAttack } from './bot-play-controller';
 
 const handleAddShips = async (socket: CustomWebSocket, data: string): Promise<void> => {
   try {
@@ -20,15 +18,18 @@ const handleAddShips = async (socket: CustomWebSocket, data: string): Promise<vo
 
     if (socket.botInfo.isSinglePlay) {
       const botShips = generateBotShips();
-      store.addShipsToGameBoard(gameId, socket.botInfo.botId, botShips, board);
+      const botBoard = new Array(BOARD_SIZE).fill('empty').map(() => new Array(BOARD_SIZE).fill('empty'));
+      store.addShipsToGameBoard(gameId, socket.botInfo.botId, botShips, botBoard);
     }
 
     const playersShipData = store.addShipsToGameBoard(gameId, indexPlayer, shipsWithCoords, board);
 
     if (playersShipData) {
       const responseData = playersShipData.map((player) => ({
-        [player.currentPlayerIndex]:
-        JSON.stringify({ ships: player.ships, currentPlayerIndex: player.currentPlayerIndex }),
+        [player.currentPlayerIndex]: JSON.stringify({
+          ships: player.ships,
+          currentPlayerIndex: player.currentPlayerIndex,
+        }),
       }));
 
       broadcastToBothDiff('start_game', responseData);
@@ -41,15 +42,15 @@ const handleAddShips = async (socket: CustomWebSocket, data: string): Promise<vo
       }
     }
   } catch (error) {
-    console.error('Error: Internal server error');
+    console.error('Error: Internal server error', error);
   }
 };
 
 const handleAttack = async (socket: CustomWebSocket, data: string): Promise<void> => {
   try {
     const requestData: AttackRequest = JSON.parse(data);
-
     const { gameId, indexPlayer } = requestData;
+
     let { x, y } = requestData;
 
     const activePlayerId = store.getActivePlayer(gameId);
@@ -121,12 +122,23 @@ const handleAttack = async (socket: CustomWebSocket, data: string): Promise<void
         }
       } else {
         store.changeBoardCellStatus(gameId, opponentPlayer.index, x, y, 'miss');
+        store.changeActivePlayer(gameId, indexPlayer);
 
         const missAttackData = JSON.stringify({ position: { x, y }, currentPlayer: indexPlayer, status: 'miss' });
         broadcastToBothTheSame('attack', missAttackData, playersIds);
         broadcastToBothTheSame('turn', JSON.stringify({ currentPlayer: opponentPlayer.index }), playersIds);
 
-        store.changeActivePlayer(gameId, indexPlayer);
+        if (socket.botInfo.isSinglePlay) {
+          // socket.botInfo.isBotTurn = true;
+
+          setTimeout(() => {
+            handleBotAttack(socket, gameId, indexPlayer);
+          }, 700);
+
+        // broadcastToBothTheSame('turn', JSON.stringify({ currentPlayer: opponentPlayer.index }), playersIds);
+        }
+
+        // broadcastToBothTheSame('attack', JSON.stringify(dataw));
       }
     } else {
       broadcastToBothTheSame('turn', JSON.stringify({ currentPlayer: indexPlayer }), playersIds);
@@ -136,34 +148,4 @@ const handleAttack = async (socket: CustomWebSocket, data: string): Promise<void
   }
 };
 
-const handleSinglePlay = async (socket: CustomWebSocket): Promise<void> => {
-  try {
-    const { playerId } = socket;
-    const botId = createId();
-
-    socket.botInfo = {
-      isSinglePlay: true,
-      botId,
-    };
-
-    const playerData = store.getPlayer(playerId);
-    const gameId = createId();
-
-    const gamePlayers = [{ index: playerId, name: playerData.name }, { index: botId, name: 'AI' }];
-    store.createGame(gameId, gamePlayers);
-
-    const createGameData = gamePlayers.map((player) => ({
-      [player.index]: JSON.stringify({ idGame: gameId, idPlayer: player.index }),
-    }));
-
-    broadcastToBothDiff('create_game', createGameData);
-  } catch (error) {
-    console.error('Error: Internal server error');
-  }
-};
-
-export {
-  handleAddShips,
-  handleAttack,
-  handleSinglePlay,
-};
+export { handleAddShips, handleAttack };
