@@ -113,6 +113,8 @@ const handleAttack = async (socket: CustomWebSocket, data: string): Promise<void
             broadcastToBothTheSame('finish', finishData, playersIds);
             broadcastToAll('update_winners', JSON.stringify(store.getWinsTable()));
 
+            store.clearGameData(indexPlayer);
+
             if (socket.botInfo.isSinglePlay) {
               socket.botInfo.isSinglePlay = false;
             }

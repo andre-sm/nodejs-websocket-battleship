@@ -1,5 +1,5 @@
 import { BaseRequest, CustomWebSocket } from '../models/player-models';
-import { handleUserAuth } from '../controllers/user-controller';
+import { handleDisconnect, handlePlayerAuth } from '../controllers/player-controller';
 import { handleRoomCreation, handleAddToRoom } from '../controllers/game-room-controller';
 import { handleAddShips, handleAttack } from '../controllers/game-play-controller';
 import { handleSinglePlay } from '../controllers/bot-play-controller';
@@ -11,7 +11,7 @@ export const handleWsConnection = async (socket: CustomWebSocket) => {
 
       switch (type) {
         case 'reg':
-          handleUserAuth(socket, data);
+          handlePlayerAuth(socket, data);
           break;
 
         case 'create_room':
@@ -47,6 +47,6 @@ export const handleWsConnection = async (socket: CustomWebSocket) => {
   });
 
   socket.on('close', () => {
-    console.log('Client disconnected');
+    handleDisconnect(socket);
   });
 };

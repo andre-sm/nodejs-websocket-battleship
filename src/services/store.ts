@@ -103,6 +103,25 @@ export const createGame = (idGame: number, gamePlayers: RoomPlayerData[]) => {
   }
 };
 
+export const clearGameData = (playerId: number): number | void => {
+  try {
+    const roomData = Object.values(rooms).find((room) => room.roomUsers.find((user) => user.index === playerId));
+    if (roomData) {
+      delete rooms[roomData.roomId];
+    }
+
+    const gameData = Object.values(games).find((game) => game.players[playerId]);
+    let opponentPlayer;
+    if (gameData) {
+      opponentPlayer = Object.values(games[gameData.idGame].players).find((player) => player.index !== playerId);
+      delete games[gameData.idGame];
+    }
+    return opponentPlayer?.index;
+  } catch (error) {
+    throw new Error('Error while adding new player to room');
+  }
+};
+
 export const addShipsToGameBoard
   = (gameId: number, playerId: number, ships: CustomShip[], board: Array<Array<string>>) => {
     try {

@@ -64,6 +64,8 @@ const makeBotShot = (
         const finishData = JSON.stringify({ winPlayer: playersIds.bot });
         broadcastToBothTheSame('finish', finishData, Object.values(playersIds));
         broadcastToAll('update_winners', JSON.stringify(store.getWinsTable()));
+
+        store.clearGameData(playersIds.bot);
       } else {
         setTimeout(() => {
           makeBotShot(socket, gameId, board, ships, playersIds);

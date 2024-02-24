@@ -1,9 +1,9 @@
 import { PlayerAuthData, CustomWebSocket } from '../models/player-models';
 import { createId } from '../utils/create-id';
 import * as store from '../services/store';
-import { broadcastToAll } from '../utils/broadcast';
+import { broadcastToAll, broadcastToBothTheSame } from '../utils/broadcast';
 
-const handleUserAuth = async (socket: CustomWebSocket, data: string): Promise<void> => {
+const handlePlayerAuth = async (socket: CustomWebSocket, data: string): Promise<void> => {
   try {
     const { name, password }: PlayerAuthData = JSON.parse(data);
 
@@ -41,6 +41,24 @@ const handleUserAuth = async (socket: CustomWebSocket, data: string): Promise<vo
   }
 };
 
+const handleDisconnect = (socket: CustomWebSocket): void => {
+  try {
+    const { playerId } = socket;
+    const gameWinnerId = store.clearGameData(playerId);
+
+    if (gameWinnerId) {
+      store.addWinToTable(gameWinnerId);
+
+      const finishData = JSON.stringify({ winPlayer: gameWinnerId });
+      broadcastToBothTheSame('finish', finishData, [gameWinnerId]);
+      broadcastToAll('update_winners', JSON.stringify(store.getWinsTable()));
+    }
+  } catch (error) {
+    console.error('Error: Internal server error');
+  }
+};
+
 export {
-  handleUserAuth,
+  handlePlayerAuth,
+  handleDisconnect,
 };
