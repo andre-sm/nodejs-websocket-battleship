@@ -88,24 +88,21 @@ const handleAttack = async (socket: CustomWebSocket, data: string): Promise<void
         const gameTurnData = JSON.stringify({ currentPlayer: indexPlayer });
 
         if (hitShip.health === 0) {
-          const killAttackData = JSON.stringify({ position: { x, y }, currentPlayer: indexPlayer, status: 'killed' });
-          broadcastToBothTheSame('attack', killAttackData, playersIds);
-          broadcastToBothTheSame('turn', gameTurnData, playersIds);
-
           hitShip.coordinates.forEach((coord) => {
+            const killAttackData
+              = JSON.stringify({ position: { x: coord.x, y: coord.y }, currentPlayer: indexPlayer, status: 'killed' });
+            broadcastToBothTheSame('attack', killAttackData, playersIds);
             store.changeBoardCellStatus(gameId, opponentPlayer.index, coord.x, coord.y, 'kill');
           });
 
           const surroundCoordinates = getSurroundCoordinates(hitShip.coordinates);
-
           surroundCoordinates.forEach((coord) => {
             store.changeBoardCellStatus(gameId, opponentPlayer.index, coord.x, coord.y, 'miss');
 
             const missAttackData = JSON.stringify({ position: coord, currentPlayer: indexPlayer, status: 'miss' });
-
             broadcastToBothTheSame('attack', missAttackData, playersIds);
-            broadcastToBothTheSame('turn', gameTurnData, playersIds);
           });
+          broadcastToBothTheSame('turn', gameTurnData, playersIds);
 
           const areAllShipsKilled = store.checkShipsHealth(gameId, opponentPlayer.index);
 
