@@ -7,16 +7,16 @@ const rooms: { [key: string]: Room; } = {};
 const games: { [key: string]: Game; } = {};
 const winners: { [key: string]: Win; } = {};
 
-export const addPlayer = (name: string, password: string, id: number): boolean => {
+export const addPlayer = (name: string, password: string, id: number): { message: string, isSuccessful: boolean } => {
   try {
-    const isAlreadyExist = Object.values(players).find((player) => player.name === name);
+    const playerWithExistingName = Object.values(players).find((player) => player.name === name);
 
-    if (isAlreadyExist) {
-      return false;
+    if (playerWithExistingName && playerWithExistingName.password !== password) {
+      return { message: 'Error: Please enter a correct password', isSuccessful: false };
     }
 
     players[id] = { id, name, password };
-    return true;
+    return { message: '', isSuccessful: true };
   } catch (error) {
     throw new Error('Error while adding new player');
   }
@@ -25,6 +25,14 @@ export const addPlayer = (name: string, password: string, id: number): boolean =
 export const getPlayer = (id: number): Player => {
   try {
     return players[id];
+  } catch (error) {
+    throw new Error('Error while adding new player');
+  }
+};
+
+export const checkPlayerForExistence = (name: string, password: string): Player | undefined => {
+  try {
+    return Object.values(players).find((player) => player.name === name && player.password === password);
   } catch (error) {
     throw new Error('Error while adding new player');
   }
@@ -66,7 +74,6 @@ export const addPlayerToRoom = (roomId: number, playerId: number) => {
     if (!isExist) {
       rooms[roomId].roomUsers.push(playerData);
     }
-
     return rooms[roomId].roomUsers;
   } catch (error) {
     throw new Error('Error while adding new player to room');
@@ -118,7 +125,7 @@ export const clearGameData = (playerId: number): number | void => {
     }
     return opponentPlayer?.index;
   } catch (error) {
-    throw new Error('Error while adding new player to room');
+    throw new Error('Error while removing game data');
   }
 };
 

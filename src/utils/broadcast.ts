@@ -49,3 +49,12 @@ export const broadcastToBothTheSame = (type: string, data: string, playerIds: nu
     }
   });
 };
+
+export const disconnectPlayer = (playerIdToDisconnect: number) => {
+  wssInstanse.clients.forEach((client) => {
+    const { playerId } = client as CustomWebSocket;
+    if (playerId === playerIdToDisconnect) {
+      client.close();
+    }
+  });
+};
