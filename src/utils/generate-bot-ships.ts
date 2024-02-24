@@ -2,8 +2,6 @@ import { DEFAULT_SHIPS, BOARD_SIZE } from '../constants/ships';
 import { Coordinate, CustomShip } from '../models/player-models';
 import { getSurroundCoordinates } from './get-surround-coordinates';
 
-const board = new Array(BOARD_SIZE).fill('empty').map(() => new Array(BOARD_SIZE).fill('empty'));
-
 const getShipCoordinates = (length: number, x: number, y: number, isVertical: boolean) => {
   const shipCoordinates = [];
   shipCoordinates.push({ x, y });
@@ -18,18 +16,16 @@ const getShipCoordinates = (length: number, x: number, y: number, isVertical: bo
   return shipCoordinates;
 };
 
-const setCoordinatesToBoard = (coordinates: Coordinate[], type: string) => {
-  coordinates.forEach((coord) => {
-    if (board[coord.x][coord.y] !== 'empty') {
-      return [];
-    }
-    board[coord.x][coord.y] = type;
-  });
-  return coordinates;
-};
-
 export const generateBotShips = (): CustomShip[] => {
+  const board = new Array(BOARD_SIZE).fill('').map(() => new Array(BOARD_SIZE).fill(''));
   const ships: CustomShip[] = [...DEFAULT_SHIPS];
+
+  const setCoordinatesToBoard = (coordinates: Coordinate[], type: string) => {
+    coordinates.forEach((coord) => {
+      board[coord.x][coord.y] = type;
+    });
+    return coordinates;
+  };
 
   ships.forEach((ship) => {
     let allShipsAreArranged = false;
@@ -42,14 +38,18 @@ export const generateBotShips = (): CustomShip[] => {
       if (isVertical && y > BOARD_SIZE - ship.length) continue;
 
       const shipCoordinates = getShipCoordinates(ship.length, x, y, isVertical);
-      const checkedCoordinates = setCoordinatesToBoard(shipCoordinates, 'ship');
-      if (checkedCoordinates.length === 0) continue;
+      const areAllCoordinatesEmpty = shipCoordinates.every((coord) => board[coord.x][coord.y] === '');
+      const surroundCoordinates = getSurroundCoordinates(shipCoordinates);
+      const areAllSurroundCoordinatesEmpty = surroundCoordinates.every((coord) => board[coord.x][coord.y] === '');
 
-      const surroundCoordinates = getSurroundCoordinates(checkedCoordinates);
-      const checkedSurroundCoordinates = setCoordinatesToBoard(surroundCoordinates, '');
-      if (checkedSurroundCoordinates.length === 0) continue;
+      if (!areAllCoordinatesEmpty && !areAllSurroundCoordinatesEmpty) continue;
+
+      setCoordinatesToBoard(shipCoordinates, 'ship');
+      setCoordinatesToBoard(surroundCoordinates, '=');
 
       ship.coordinates = shipCoordinates;
+      ship.direction = isVertical;
+      ship.health = ship.length;
       allShipsAreArranged = true;
     }
   });

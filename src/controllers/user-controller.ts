@@ -11,9 +11,8 @@ const handleUserAuth = async (socket: CustomWebSocket, data: string): Promise<vo
     socket.playerId = id;
     socket.botInfo = {
       isSinglePlay: false,
-      botId: 0,
-      gameId: 0,
-      isBotTurn: false,
+      botId: null,
+      gameId: null,
     };
 
     const isSuccessful = store.addPlayer(name, password, socket.playerId);

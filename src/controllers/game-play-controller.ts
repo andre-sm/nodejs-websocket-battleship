@@ -1,5 +1,7 @@
 import { AttackRequest } from '../models/game-play-models';
-import { CustomWebSocket, GameBoardShipsRequest, GamePlayerData } from '../models/player-models';
+import {
+  Coordinate, CustomWebSocket, GameBoardShipsRequest, GamePlayerData,
+} from '../models/player-models';
 import * as store from '../services/store';
 import { broadcastToAll, broadcastToBothDiff, broadcastToBothTheSame } from '../utils/broadcast';
 import { getRandomCoordinate } from '../utils/get-random-coordinate';
@@ -14,12 +16,13 @@ const handleAddShips = async (socket: CustomWebSocket, data: string): Promise<vo
     const { gameId, ships, indexPlayer }: GameBoardShipsRequest = JSON.parse(data);
     const shipsWithCoords = getShipCoordinates(ships);
 
-    const board = new Array(BOARD_SIZE).fill('empty').map(() => new Array(BOARD_SIZE).fill('empty'));
-
+    const board = new Array(BOARD_SIZE).fill('').map(() => new Array(BOARD_SIZE).fill(''));
     if (socket.botInfo.isSinglePlay) {
       const botShips = generateBotShips();
-      const botBoard = new Array(BOARD_SIZE).fill('empty').map(() => new Array(BOARD_SIZE).fill('empty'));
-      store.addShipsToGameBoard(gameId, socket.botInfo.botId, botShips, botBoard);
+      const botBoard = new Array(BOARD_SIZE).fill('').map(() => new Array(BOARD_SIZE).fill(''));
+      if (socket.botInfo.botId) {
+        store.addShipsToGameBoard(gameId, socket.botInfo.botId, botShips, botBoard);
+      }
     }
 
     const playersShipData = store.addShipsToGameBoard(gameId, indexPlayer, shipsWithCoords, board);
@@ -63,12 +66,12 @@ const handleAttack = async (socket: CustomWebSocket, data: string): Promise<void
     const { board, ships: enemyShips } = opponentPlayer;
 
     if (x === undefined && y === undefined) {
-      const randomCoordinate = getRandomCoordinate(board);
+      const randomCoordinate = getRandomCoordinate(board) as Coordinate;
       x = randomCoordinate.x;
       y = randomCoordinate.y;
     }
 
-    if (board[x][y] === 'empty' || board[x][y] === 'miss') {
+    if (board[x][y] === '' || board[x][y] === 'miss') {
       let hitShipIndex = -1;
       for (let i = 0; i < enemyShips.length; i += 1) {
         const ship = enemyShips[i];
@@ -112,6 +115,10 @@ const handleAttack = async (socket: CustomWebSocket, data: string): Promise<void
             const finishData = JSON.stringify({ winPlayer: indexPlayer });
             broadcastToBothTheSame('finish', finishData, playersIds);
             broadcastToAll('update_winners', JSON.stringify(store.getWinsTable()));
+
+            if (socket.botInfo.isSinglePlay) {
+              socket.botInfo.isSinglePlay = false;
+            }
           }
         } else {
           store.changeBoardCellStatus(gameId, opponentPlayer.index, x, y, 'shot');
@@ -129,16 +136,10 @@ const handleAttack = async (socket: CustomWebSocket, data: string): Promise<void
         broadcastToBothTheSame('turn', JSON.stringify({ currentPlayer: opponentPlayer.index }), playersIds);
 
         if (socket.botInfo.isSinglePlay) {
-          // socket.botInfo.isBotTurn = true;
-
           setTimeout(() => {
             handleBotAttack(socket, gameId, indexPlayer);
           }, 700);
-
-        // broadcastToBothTheSame('turn', JSON.stringify({ currentPlayer: opponentPlayer.index }), playersIds);
         }
-
-        // broadcastToBothTheSame('attack', JSON.stringify(dataw));
       }
     } else {
       broadcastToBothTheSame('turn', JSON.stringify({ currentPlayer: indexPlayer }), playersIds);

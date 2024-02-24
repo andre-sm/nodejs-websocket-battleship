@@ -190,6 +190,7 @@ export const addWinToTable = (playerId: number) => {
       };
     }
   } catch (error) {
+    console.log(error);
     throw new Error('Error while increasing win for player');
   }
 };

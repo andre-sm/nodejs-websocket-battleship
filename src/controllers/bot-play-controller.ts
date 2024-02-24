@@ -1,4 +1,5 @@
 import {
+  Coordinate,
   CustomShip,
   CustomWebSocket, GamePlayerData,
 } from '../models/player-models';
@@ -15,9 +16,10 @@ const makeBotShot = (
   ships: CustomShip[],
   playersIds: { [key: string]: number },
 ) => {
-  const { x, y } = getRandomCoordinate(board);
+  const randomCoordinate = getRandomCoordinate(board) as Coordinate;
+  const { x, y } = randomCoordinate;
 
-  if (board[x][y] === 'empty' || board[x][y] === 'miss') {
+  if (board[x][y] === '' || board[x][y] === 'miss') {
     let hitShipIndex = -1;
     for (let i = 0; i < ships.length; i += 1) {
       const ship = ships[i];
@@ -27,7 +29,7 @@ const makeBotShot = (
     }
 
     if (hitShipIndex !== -1) {
-      store.decreaseShipHealth(gameId, playersIds.bot, hitShipIndex);
+      store.decreaseShipHealth(gameId, playersIds.player, hitShipIndex);
 
       const hitShip = ships[hitShipIndex];
       const gameTurnData = JSON.stringify({ currentPlayer: playersIds.bot });
@@ -64,6 +66,10 @@ const makeBotShot = (
           const finishData = JSON.stringify({ winPlayer: playersIds.bot });
           broadcastToBothTheSame('finish', finishData, Object.values(playersIds));
           broadcastToAll('update_winners', JSON.stringify(store.getWinsTable()));
+        } else {
+          setTimeout(() => {
+            makeBotShot(socket, gameId, board, ships, playersIds);
+          }, 700);
         }
       } else {
         store.changeBoardCellStatus(gameId, playersIds.player, x, y, 'shot');
@@ -83,8 +89,6 @@ const makeBotShot = (
       const missAttackData = JSON.stringify({ position: { x, y }, currentPlayer: playersIds.bot, status: 'miss' });
       broadcastToBothTheSame('attack', missAttackData, Object.values(playersIds));
       broadcastToBothTheSame('turn', JSON.stringify({ currentPlayer: playersIds.player }), Object.values(playersIds));
-
-      socket.botInfo.isBotTurn = false;
     }
   } else {
     // broadcastToBothTheSame('turn', JSON.stringify({ currentPlayer: playerId }), playersIds);
@@ -102,32 +106,25 @@ const handleBotAttack = (socket: CustomWebSocket, gameId: number, playerId: numb
 
 const handleSinglePlay = async (socket: CustomWebSocket): Promise<void> => {
   try {
-    const { playerId } = socket;
-    const botId = createId();
-    console.log('bot Id:', botId);
-
-    // const botSocket = new WebSocket('ws://localhost:3000') as CustomWebSocket;
-    // botSocket.playerId = botId;
-
-    // botSocket.botInfo = {
-    //   isSinglePlay: true,
-    //   botId,
-    //   isBotTurn: false,
-    // };
-
-    // addConnection(botSocket, botId);
-
-    const playerData = store.getPlayer(playerId);
     const gameId = createId();
+    const botId = socket.botInfo.botId || createId();
 
-    socket.botInfo = {
-      isSinglePlay: true,
-      botId,
-      gameId,
-      isBotTurn: false,
-    };
+    if (socket.botInfo.botId) {
+      socket.botInfo = { ...socket.botInfo, isSinglePlay: true, gameId };
+    } else {
+      socket.botInfo = {
+        isSinglePlay: true,
+        botId,
+        gameId,
+      };
 
-    const gamePlayers = [{ index: playerId, name: playerData.name }, { index: botId, name: 'AI' }];
+      store.addPlayer('AI', createId().toString(), botId);
+    }
+
+    const playerData = store.getPlayer(socket.playerId);
+    const botData = store.getPlayer(botId);
+
+    const gamePlayers = [{ index: socket.playerId, name: playerData.name }, { index: botId, name: botData.name }];
     store.createGame(gameId, gamePlayers);
 
     const createGameData = gamePlayers.map((player) => ({
