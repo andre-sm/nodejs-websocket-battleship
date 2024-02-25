@@ -71,6 +71,9 @@ const handlePlayerAuth = (socket: CustomWebSocket, data: string): void => {
 const handleDisconnect = (socket: CustomWebSocket): void => {
   try {
     const { playerId } = socket;
+    store.deletePlayersRooms([playerId]);
+    broadcastToAll('update_room', JSON.stringify(store.getRoomList()));
+
     const gameWinnerId = store.clearGameData(playerId);
 
     if (gameWinnerId) {

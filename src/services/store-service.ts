@@ -110,13 +110,24 @@ export const createGame = (idGame: number, gamePlayers: RoomPlayerData[]): void 
   }
 };
 
+export const deletePlayersRooms = (playerIds: number[]): number | void => {
+  try {
+    playerIds.forEach((playerId) => {
+      const playersRooms
+        = Object.values(rooms).filter((room) => room.roomUsers.find((user) => user.index === playerId));
+      if (playersRooms.length !== 0) {
+        playersRooms.forEach((room) => {
+          delete rooms[room.roomId];
+        });
+      }
+    });
+  } catch (error) {
+    throw new Error('Error while removing players rooms');
+  }
+};
+
 export const clearGameData = (playerId: number): number | void => {
   try {
-    const roomData = Object.values(rooms).find((room) => room.roomUsers.find((user) => user.index === playerId));
-    if (roomData) {
-      delete rooms[roomData.roomId];
-    }
-
     const gameData = Object.values(games).find((game) => game.players[playerId]);
     let opponentPlayer;
     if (gameData) {
@@ -216,7 +227,6 @@ export const addWinToTable = (playerId: number): void => {
       };
     }
   } catch (error) {
-    console.log(error);
     throw new Error('Error while player win increase');
   }
 };

@@ -25,7 +25,7 @@ const getShipCoordinates = (length: number, x: number, y: number, isVertical: bo
 export const generateBotShips = (): CustomShip[] | undefined => {
   try {
     const board = new Array(BOARD_SIZE).fill('').map(() => new Array(BOARD_SIZE).fill(''));
-    const ships: CustomShip[] = [...DEFAULT_SHIPS];
+    const ships: CustomShip[] = JSON.parse(JSON.stringify(DEFAULT_SHIPS));
 
     const setCoordinatesToBoard = (coordinates: Coordinate[], type: string) => {
       coordinates.forEach((coord) => {

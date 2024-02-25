@@ -118,6 +118,7 @@ const handleSinglePlay = (socket: CustomWebSocket): void => {
   try {
     const gameId = createId();
     const botId = socket.botInfo.botId || createId();
+    const playerData = store.getPlayer(socket.playerId);
 
     if (socket.botInfo.botId) {
       socket.botInfo = { ...socket.botInfo, isSinglePlay: true, gameId };
@@ -128,10 +129,9 @@ const handleSinglePlay = (socket: CustomWebSocket): void => {
         gameId,
       };
 
-      store.addPlayer(BOT_NAME, createId().toString(), botId);
+      store.addPlayer(`${BOT_NAME}-${playerData.name}`, createId().toString(), botId);
     }
 
-    const playerData = store.getPlayer(socket.playerId);
     const botData = store.getPlayer(botId);
 
     const gamePlayers = [{ index: socket.playerId, name: playerData.name }, { index: botId, name: botData.name }];
@@ -143,7 +143,7 @@ const handleSinglePlay = (socket: CustomWebSocket): void => {
     broadcastToBothDiff('create_game', createGameData);
   } catch (error) {
     if (error instanceof Error) {
-      console.error(error.message);
+      console.error(error);
     }
   }
 };

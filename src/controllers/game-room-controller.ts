@@ -33,6 +33,7 @@ const handleAddToRoom = (socket: CustomWebSocket, data: string): void => {
       }));
 
       broadcastToBothDiff('create_game', createGameData);
+      store.deletePlayersRooms(roomPlayers.map((player) => player.index));
     }
 
     broadcastToAll('update_room', JSON.stringify(store.getRoomList()));
