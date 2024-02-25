@@ -3,11 +3,12 @@ import {
   CustomShip,
   CustomWebSocket, GamePlayerData,
 } from '../models/player-models';
-import * as store from '../services/store';
+import * as store from '../services/store-service';
 import { broadcastToAll, broadcastToBothDiff, broadcastToBothTheSame } from '../utils/broadcast';
 import { getRandomCoordinate } from '../utils/get-random-coordinate';
 import { getSurroundCoordinates } from '../utils/get-surround-coordinates';
 import { createId } from '../utils/create-id';
+import { BOT_NAME } from '../constants/ships';
 
 const makeBotShot = (
   socket: CustomWebSocket,
@@ -113,7 +114,7 @@ const handleBotAttack = (socket: CustomWebSocket, gameId: number, playerId: numb
   }
 };
 
-const handleSinglePlay = async (socket: CustomWebSocket): Promise<void> => {
+const handleSinglePlay = (socket: CustomWebSocket): void => {
   try {
     const gameId = createId();
     const botId = socket.botInfo.botId || createId();
@@ -127,7 +128,7 @@ const handleSinglePlay = async (socket: CustomWebSocket): Promise<void> => {
         gameId,
       };
 
-      store.addPlayer('AI', createId().toString(), botId);
+      store.addPlayer(BOT_NAME, createId().toString(), botId);
     }
 
     const playerData = store.getPlayer(socket.playerId);

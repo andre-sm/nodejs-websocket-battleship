@@ -1,8 +1,7 @@
-import { AttackRequest } from '../models/game-play-models';
 import {
-  Coordinate, CustomShip, CustomWebSocket, GameBoardShipsRequest, GamePlayerData,
+  Coordinate, CustomShip, CustomWebSocket, GameBoardShipsRequest, GamePlayerData, AttackRequest,
 } from '../models/player-models';
-import * as store from '../services/store';
+import * as store from '../services/store-service';
 import { broadcastToAll, broadcastToBothDiff, broadcastToBothTheSame } from '../utils/broadcast';
 import { getRandomCoordinate } from '../utils/get-random-coordinate';
 import { getShipCoordinates } from '../utils/get-ship-coordinates';
@@ -11,7 +10,7 @@ import { BOARD_SIZE } from '../constants/ships';
 import { generateBotShips } from '../utils/generate-bot-ships';
 import { handleBotAttack } from './bot-play-controller';
 
-const handleAddShips = async (socket: CustomWebSocket, data: string): Promise<void> => {
+const handleAddShips = (socket: CustomWebSocket, data: string): void => {
   try {
     const { gameId, ships, indexPlayer }: GameBoardShipsRequest = JSON.parse(data);
     const shipsWithCoords = getShipCoordinates(ships);
@@ -51,7 +50,7 @@ const handleAddShips = async (socket: CustomWebSocket, data: string): Promise<vo
   }
 };
 
-const handleAttack = async (socket: CustomWebSocket, data: string): Promise<void> => {
+const handleAttack = (socket: CustomWebSocket, data: string): void => {
   try {
     const requestData: AttackRequest = JSON.parse(data);
     const { gameId, indexPlayer } = requestData;

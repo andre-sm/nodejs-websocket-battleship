@@ -1,9 +1,9 @@
 import { PlayerAuthData, CustomWebSocket } from '../models/player-models';
 import { createId } from '../utils/create-id';
-import * as store from '../services/store';
+import * as store from '../services/store-service';
 import { broadcastToAll, broadcastToBothTheSame, disconnectPlayer } from '../utils/broadcast';
 
-const handlePlayerAuth = async (socket: CustomWebSocket, data: string): Promise<void> => {
+const handlePlayerAuth = (socket: CustomWebSocket, data: string): void => {
   try {
     const { name, password }: PlayerAuthData = JSON.parse(data);
 

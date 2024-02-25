@@ -1,5 +1,7 @@
 export const BOARD_SIZE = 10;
 
+export const BOT_NAME = 'AI';
+
 export const DEFAULT_SHIPS = [
   {
     position: { x: 0, y: 0 },

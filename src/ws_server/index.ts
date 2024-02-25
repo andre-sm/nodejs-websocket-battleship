@@ -4,7 +4,7 @@ import { handleRoomCreation, handleAddToRoom } from '../controllers/game-room-co
 import { handleAddShips, handleAttack } from '../controllers/game-play-controller';
 import { handleSinglePlay } from '../controllers/bot-play-controller';
 
-export const handleWsConnection = async (socket: CustomWebSocket) => {
+export const handleWsConnection = (socket: CustomWebSocket): void => {
   socket.on('message', (msg: Buffer) => {
     try {
       const { type, data }: BaseRequest = JSON.parse(msg.toString());

@@ -16,7 +16,9 @@ export const broadcastToAll = (type: string, data: string): void => {
     };
 
     wssInstanse.clients.forEach((client) => {
-      client.send(JSON.stringify(response));
+      if (client.readyState === 1) {
+        client.send(JSON.stringify(response));
+      }
     });
   } catch (error) {
     if (error instanceof Error) {
@@ -28,15 +30,17 @@ export const broadcastToAll = (type: string, data: string): void => {
 export const broadcastToBothDiff = (type: string, data: { [key: string]: string; }[]): void => {
   try {
     wssInstanse.clients.forEach((client) => {
-      const { playerId } = client as CustomWebSocket;
-      const player = data.find((item) => item[playerId]);
-      if (player) {
-        const msg = {
-          type,
-          data: player[playerId],
-          id: 0,
-        };
-        client.send(JSON.stringify(msg));
+      if (client.readyState === 1) {
+        const { playerId } = client as CustomWebSocket;
+        const player = data.find((item) => item[playerId]);
+        if (player) {
+          const msg = {
+            type,
+            data: player[playerId],
+            id: 0,
+          };
+          client.send(JSON.stringify(msg));
+        }
       }
     });
   } catch (error) {
@@ -55,10 +59,12 @@ export const broadcastToBothTheSame = (type: string, data: string, playerIds: nu
     };
 
     wssInstanse.clients.forEach((client) => {
-      const { playerId } = client as CustomWebSocket;
-      const player = playerIds.includes(playerId);
-      if (player) {
-        client.send(JSON.stringify(response));
+      if (client.readyState === 1) {
+        const { playerId } = client as CustomWebSocket;
+        const player = playerIds.includes(playerId);
+        if (player) {
+          client.send(JSON.stringify(response));
+        }
       }
     });
   } catch (error) {
@@ -71,9 +77,11 @@ export const broadcastToBothTheSame = (type: string, data: string, playerIds: nu
 export const disconnectPlayer = (playerIdToDisconnect: number): void => {
   try {
     wssInstanse.clients.forEach((client) => {
-      const { playerId } = client as CustomWebSocket;
-      if (playerId === playerIdToDisconnect) {
-        client.close();
+      if (client.readyState === 1) {
+        const { playerId } = client as CustomWebSocket;
+        if (playerId === playerIdToDisconnect) {
+          client.close();
+        }
       }
     });
   } catch (error) {

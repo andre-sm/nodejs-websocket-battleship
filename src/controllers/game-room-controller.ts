@@ -1,9 +1,9 @@
 import { CustomWebSocket } from '../models/player-models';
-import * as store from '../services/store';
+import * as store from '../services/store-service';
 import { createId } from '../utils/create-id';
 import { broadcastToAll, broadcastToBothDiff } from '../utils/broadcast';
 
-const handleRoomCreation = async (socket: CustomWebSocket): Promise<void> => {
+const handleRoomCreation = (socket: CustomWebSocket): void => {
   try {
     const roomId = createId();
 
@@ -19,7 +19,7 @@ const handleRoomCreation = async (socket: CustomWebSocket): Promise<void> => {
   }
 };
 
-const handleAddToRoom = async (socket: CustomWebSocket, data: string): Promise<void> => {
+const handleAddToRoom = (socket: CustomWebSocket, data: string): void => {
   try {
     const { indexRoom } = JSON.parse(data);
     const roomPlayers = store.addPlayerToRoom(indexRoom, socket.playerId);
