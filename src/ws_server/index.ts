@@ -42,11 +42,19 @@ export const handleWsConnection = async (socket: CustomWebSocket) => {
           break;
       }
     } catch (error) {
-      console.error('Error: Internal server error', error);
+      if (error instanceof Error) {
+        console.error(error.message);
+      }
     }
   });
 
   socket.on('close', () => {
-    handleDisconnect(socket);
+    try {
+      handleDisconnect(socket);
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error(error.message);
+      }
+    }
   });
 };

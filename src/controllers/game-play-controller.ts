@@ -1,6 +1,6 @@
 import { AttackRequest } from '../models/game-play-models';
 import {
-  Coordinate, CustomWebSocket, GameBoardShipsRequest, GamePlayerData,
+  Coordinate, CustomShip, CustomWebSocket, GameBoardShipsRequest, GamePlayerData,
 } from '../models/player-models';
 import * as store from '../services/store';
 import { broadcastToAll, broadcastToBothDiff, broadcastToBothTheSame } from '../utils/broadcast';
@@ -18,7 +18,7 @@ const handleAddShips = async (socket: CustomWebSocket, data: string): Promise<vo
 
     const board = new Array(BOARD_SIZE).fill('').map(() => new Array(BOARD_SIZE).fill(''));
     if (socket.botInfo.isSinglePlay) {
-      const botShips = generateBotShips();
+      const botShips = generateBotShips() as CustomShip[];
       const botBoard = new Array(BOARD_SIZE).fill('').map(() => new Array(BOARD_SIZE).fill(''));
       if (socket.botInfo.botId) {
         store.addShipsToGameBoard(gameId, socket.botInfo.botId, botShips, botBoard);
@@ -45,7 +45,9 @@ const handleAddShips = async (socket: CustomWebSocket, data: string): Promise<vo
       }
     }
   } catch (error) {
-    console.error('Error: Internal server error', error);
+    if (error instanceof Error) {
+      console.error(error.message);
+    }
   }
 };
 
@@ -144,7 +146,9 @@ const handleAttack = async (socket: CustomWebSocket, data: string): Promise<void
       broadcastToBothTheSame('turn', JSON.stringify({ currentPlayer: indexPlayer }), playersIds);
     }
   } catch (error) {
-    console.error('Error: Internal server error', error);
+    if (error instanceof Error) {
+      console.error(error.message);
+    }
   }
 };
 

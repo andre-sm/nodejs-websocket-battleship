@@ -31,6 +31,6 @@ export const getRandomCoordinate = ((board: Array<Array<string>>) => {
     }
     return { x: 0, y: 0 };
   } catch (error) {
-    console.error('Error while getting random coordinates', error);
+    throw new Error('Error while getting random coordinates');
   }
 });

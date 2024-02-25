@@ -62,7 +62,9 @@ const handlePlayerAuth = async (socket: CustomWebSocket, data: string): Promise<
       broadcastToAll('update_winners', JSON.stringify(store.getWinsTable()));
     }
   } catch (error) {
-    console.error('Error: Internal server error', error);
+    if (error instanceof Error) {
+      console.error(error.message);
+    }
   }
 };
 
@@ -79,7 +81,9 @@ const handleDisconnect = (socket: CustomWebSocket): void => {
       broadcastToAll('update_winners', JSON.stringify(store.getWinsTable()));
     }
   } catch (error) {
-    console.error('Error: Internal server error', error);
+    if (error instanceof Error) {
+      console.error(error.message);
+    }
   }
 };
 
