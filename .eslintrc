@@ -21,11 +21,10 @@
         "@typescript-eslint/naming-convention": [
             "error",
             {
-              "selector": "variable",
-              "format": ["camelCase", "UPPER_CASE", "PascalCase", "snake_case"],
-              "leadingUnderscore": "allow",
-              "trailingUnderscore": "allow"
-            }
+              "selector": "property",
+              "filter": "__typename",
+              "format": null
+           }
           ],
           "no-param-reassign": "off",
           "no-continue": "off",

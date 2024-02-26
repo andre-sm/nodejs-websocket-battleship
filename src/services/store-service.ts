@@ -239,11 +239,10 @@ export const getWinsTable = (): Win[] => {
   }
 };
 
-export const changeBoardCellStatus
-  = (gameId: number, playerId: number, x: number, y: number, status: string): void => {
-    try {
-      games[gameId].players[playerId].board[x][y] = status;
-    } catch (error) {
-      throw new Error('Error while cell status change');
-    }
-  };
+export const changeBoardCellStatus = (gameId: number, playerId: number, x: number, y: number, status: string): void => {
+  try {
+    games[gameId].players[playerId].board[x][y] = status;
+  } catch (error) {
+    throw new Error('Error while cell status change');
+  }
+};

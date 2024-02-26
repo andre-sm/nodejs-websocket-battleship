@@ -37,12 +37,11 @@ const makeBotShot = (
 
       if (hitShip.health === 0) {
         hitShip.coordinates.forEach((coord) => {
-          const killAttackData
-                = JSON.stringify({
-                  position: { x: coord.x, y: coord.y },
-                  currentPlayer: playersIds.bot,
-                  status: 'killed',
-                });
+          const killAttackData = JSON.stringify({
+            position: { x: coord.x, y: coord.y },
+            currentPlayer: playersIds.bot,
+            status: 'killed',
+          });
           broadcastToBothTheSame('attack', killAttackData, Object.values(playersIds));
 
           store.changeBoardCellStatus(gameId, playersIds.player, coord.x, coord.y, 'kill');
