@@ -67,6 +67,10 @@ const makeBotShot = (
           broadcastToAll('update_winners', JSON.stringify(store.getWinsTable()));
 
           store.clearGameData(playersIds.bot);
+
+          if (socket.botInfo.isSinglePlay) {
+            socket.botInfo.isSinglePlay = false;
+          }
         } else {
           setTimeout(() => {
             makeBotShot(socket, gameId, board, ships, playersIds);
