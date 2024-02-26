@@ -34,3 +34,4 @@ npm run start
 - By default WebSocket client tries to connect to the 3000 port
 - Each player can create several game rooms. but when the game starts, all rooms created by players are deleted
 - When the player shoots at a cell that already consists of a damaged or killed ship, the player has one more try. But if the shoot was made into an already missed cell, the turn of the shoot passes to the opponent
+- Password verification has been implemented. So when the player is already logged in and tries to log into a second tab with the same name but the wrong password, an error occurs. If the password in the second tab is correct, the first connection will be terminated
