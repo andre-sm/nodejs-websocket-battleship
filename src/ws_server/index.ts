@@ -9,6 +9,8 @@ export const handleWsConnection = (socket: CustomWebSocket): void => {
     try {
       const { type, data }: BaseRequest = JSON.parse(msg.toString());
 
+      console.log(`Received command >>> ${type} >>> ${data}`);
+
       switch (type) {
         case 'reg':
           handlePlayerAuth(socket, data);

@@ -20,6 +20,8 @@ export const broadcastToAll = (type: string, data: string): void => {
         client.send(JSON.stringify(response));
       }
     });
+
+    console.log(`Send to all <<< ${type} <<< ${data}`);
   } catch (error) {
     if (error instanceof Error) {
       console.error(error.message);
@@ -40,6 +42,8 @@ export const broadcastToBothDiff = (type: string, data: { [key: string]: string;
             id: 0,
           };
           client.send(JSON.stringify(msg));
+
+          console.log(`Send to game player <<< ${type} <<< ${player[playerId]}`);
         }
       }
     });
@@ -67,6 +71,7 @@ export const broadcastToBothTheSame = (type: string, data: string, playerIds: nu
         }
       }
     });
+    console.log(`Send to game players <<< ${type} <<< ${data}`);
   } catch (error) {
     if (error instanceof Error) {
       console.error(error.message);

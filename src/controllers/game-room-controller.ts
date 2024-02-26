@@ -11,7 +11,6 @@ const handleRoomCreation = (socket: CustomWebSocket): void => {
     store.addPlayerToRoom(roomId, socket.playerId);
 
     broadcastToAll('update_room', JSON.stringify(store.getRoomList()));
-    broadcastToAll('update_winners', JSON.stringify(store.getWinsTable()));
   } catch (error) {
     if (error instanceof Error) {
       console.error(error.message);
@@ -37,7 +36,6 @@ const handleAddToRoom = (socket: CustomWebSocket, data: string): void => {
     }
 
     broadcastToAll('update_room', JSON.stringify(store.getRoomList()));
-    broadcastToAll('update_winners', JSON.stringify(store.getWinsTable()));
   } catch (error) {
     if (error instanceof Error) {
       console.error(error.message);
